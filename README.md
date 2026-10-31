@@ -1,27 +1,26 @@
 # mit-museum-brain
-### thinking cells frozen and in motion
+### Thinking Cells Frozen and In motion
 
-[![live application](https://img.shields.io/badge/live-letters--mit--museum--brain.web.app-brightgreen.svg)](https://letters-mit-museum-brain.web.app)
 [![firebase hosting](https://img.shields.io/badge/firebase-hosting-orange.svg)](https://letters-mit-museum-brain.web.app)
 [![onnx webgl](https://img.shields.io/badge/onnx-runtime--web-blue.svg)](https://onnxruntime.ai/)
 [![license: mit](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-a curatorial research platform and interactive installation developed for the **mit museum**, connecting archival museum photography, continuous biophysical feature tensors, edge-guided botanical diffusion priors, and kinetic cellular choreography.
+A curatorial research platform and interactive installation developed for the **mit museum**, connecting archival museum photography, continuous biophysical feature tensors, edge-guided botanical diffusion priors, and kinetic cellular choreography.
 
-developed for the **brain digital content open call** and **brain programmatic open call**, this repository serves as the public home for the interactive web application, companion research notebooks, and academic manuscripts.
+Developed for the **brain digital content open call** and **brain programmatic open call**, this repository serves as the public home for the interactive web application, companion research notebooks, and academic manuscripts.
 
 ---
 
-## vision & purpose
+## Vision
 
-while a physical museum exhibition does not inherently require a web application, an untainted, browser-based deployment represents the most portable, zero-configuration medium to:
+While a physical museum exhibition does not inherently require a web application, an untainted, browser-based deployment represents the most portable, zero-configuration medium to:
 1. **present the core ideas to curators, jurors, and visitors** with instantaneous live execution across kiosks, tablets, and desktop workstations.
 2. **democratize computational curatorial tools**, allowing individuals and peer cultural institutions to ingest, filter, and choreograph their own historical archives.
 3. **bridge frozen historical artifacts with continuous neural computation**, reimagining static vitrine specimens as active participants in generative cellular dynamics.
 
 ---
 
-## system architecture
+## Architecture
 
 ```
 +---------------------------------------------------------------------------------------+
@@ -41,16 +40,16 @@ while a physical museum exhibition does not inherently require a web application
 ```
 
 ### 1. tier 1: untainted local corpus packaging
-to guarantee offline kiosk compatibility without browser `file://` cors violations or canvas taint security exceptions, 25 authentic mit museum artifacts were preprocessed, center-cropped to $384\times 384$ pixels via lanczos filtering, and serialized into `museum_corpus_data.js` as base64 data uris. data uris inherit the document security context, ensuring instantaneous synchronous pixel ingestion.
+To guarantee offline kiosk compatibility without browser `file://` cors violations or canvas taint security exceptions, 25 authentic mit museum artifacts were preprocessed, center-cropped to $384\times 384$ pixels via lanczos filtering, and serialized into `museum_corpus_data.js` as base64 data uris. data uris inherit the document security context, ensuring instantaneous synchronous pixel ingestion.
 
 ### 2. tier 2: structural feature tensors
-each specimen cell precomputes four structural fields:
+Each specimen cell precomputes four structural fields:
 - **dynamic-range normalized luminance**: perceptual luminance $L_0 = (0.299R + 0.587G + 0.114B)/255$, normalized across each specimen's dynamic range $[L_{\min}, L_{\max}]$.
 - **sobel gradient vector field**: horizontal and vertical derivatives $(G_x, G_y)$ and edge magnitudes $E(x,y)$.
 - **high-pass engraving plate**: strided local mean subtraction $\bar{L}_5(x,y)$ combined with atkinson error diffusion for crisp stippling under uneven museum vitrine lighting.
 
 ### 3. tier 3: diffusion workbench & cellular shaders
-- **edge-guided dino diffusion**: runs ollin boer bohan's *dino diffusion* u-net via onnx runtime web (webgl), conditioned on $64\times 64$ sobel silhouette guidance.
+- **Edge-guided dino diffusion**: runs ollin boer bohan's *dino diffusion* u-net via onnx runtime web (webgl), conditioned on $64\times 64$ sobel silhouette guidance.
 - **four real-time cellular modes**:
   - `etch`: coarse-to-fine block sampling converging onto the atkinson plate.
   - `reaction`: anisotropic gray-scott reaction-diffusion solver modulated by object edge maps.
@@ -58,11 +57,11 @@ each specimen cell precomputes four structural fields:
   - `halftone`: phase-shifted copperplate cross-hatching.
 
 ### 4. tier 4: kinetic orbital choreography
-a 60 fps spring-physics simulation orchestrates the 25 cells across the $5\times 5$ grid into 2-cell partner waltzes, 3-cell triad carousels, and $2\times 2$ quartet pinwheels.
+A 60 fps spring-physics simulation orchestrates the 25 cells across the $5\times 5$ grid into 2-cell partner waltzes, 3-cell triad carousels, and $2\times 2$ quartet pinwheels.
 
 ---
 
-## repository structure
+## Repository Structure
 
 ```
 mit-museum-brain/
@@ -98,10 +97,10 @@ mit-museum-brain/
 
 ---
 
-## quick start
+## Start!
 
 ### option a: zero-dependency local launch
-the application is engineered to run out of the box with zero npm packages or build steps:
+The application is engineered to run out of the box with zero npm packages or build steps:
 ```bash
 # clone the repository
 git clone https://github.com/viral-medialab/mit-museum-brain.git
@@ -135,9 +134,9 @@ npm run deploy # or: firebase deploy --only hosting:letters-mit-museum-brain
 
 ---
 
-## curatorial specimens in the corpus
+## Curatorial specimens in the corpus
 
-the 25 featured artifacts span cybernetics, robotics, computing history, scientific instrumentation, and contemporary media art at mit:
+The 25 featured artifacts span cybernetics, robotics, computing history, scientific instrumentation, and contemporary media art at mit:
 
 | slot | artifact name | year | accession / motif |
 |---|---|---|---|
@@ -169,23 +168,23 @@ the 25 featured artifacts span cybernetics, robotics, computing history, scienti
 
 ---
 
-## research manuscripts & citations
+## Research
 
-1. **vitrified synapses in superconducting neuromorphic circuits**  
+1. **Vitrified Synapses in Superconducting Neuromorphic Circuits**  
    *erick oduniyi*, massachusetts institute of technology (2026).  
    a 3-page theoretical framework connecting time-resolved cryo-et morphometry to single flux quantum (sfq) circuits and magnetic josephson synapses.  
    located at [`research/papers/vitrified-synapses/paper1.pdf`](research/papers/vitrified-synapses/paper1.pdf).
 
-2. **thinking cells frozen and in motion**  
+2. **Thinking Cells Frozen and in Motion**  
    *erick oduniyi*, ieee computer graphics & applications / acm interactions (2026).  
    detailed technical manuscript detailing the 4-tier system architecture, benchmarks, and gallery installation designs.  
    located at [`research/papers/thinking-cells-cga/thinking_machines_ieee_cga_paper.pdf`](research/papers/thinking-cells-cga/thinking_machines_ieee_cga_paper.pdf).
 
 ---
 
-## extending to other collections
+## Extending
 
-institutions and researchers can adapt the pipeline to new collections by running the python preprocessing script:
+Institutions and researchers can adapt the pipeline to new collections by running the python preprocessing script:
 ```bash
 python3 scripts/preprocess_collection.py --input /path/to/raw_photos/ --output public/assets/
 ```
@@ -193,7 +192,7 @@ the script resamples images to $384\times 384$ lanczos squares and compiles `mus
 
 ---
 
-## license
+## License
 
-mit license. copyright (c) 2026 erick oduniyi / mit media lab.
+MIT license.
 

@@ -34,3 +34,4 @@ we will investigate, verify, and resolve confirmed vulnerabilities promptly befo
 
 5. **offline zero-taint ingestion**:
    museum photographs and feature vectors are bundled via base64 data uris inheriting local document contexts, preventing canvas-taint vulnerabilities and cross-origin tracking.
+
