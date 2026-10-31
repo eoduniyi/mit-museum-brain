@@ -1,7 +1,8 @@
 # mit-museum-brain
 ### thinking cells frozen and in motion
 
-[![firebase hosting](https://img.shields.io/badge/firebase-hosting-orange.svg)](https://firebase.google.com/)
+[![live application](https://img.shields.io/badge/live-letters--mit--museum--brain.web.app-brightgreen.svg)](https://letters-mit-museum-brain.web.app)
+[![firebase hosting](https://img.shields.io/badge/firebase-hosting-orange.svg)](https://letters-mit-museum-brain.web.app)
 [![onnx webgl](https://img.shields.io/badge/onnx-runtime--web-blue.svg)](https://onnxruntime.ai/)
 [![license: mit](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -120,15 +121,16 @@ npx serve public
 ```
 
 ### option c: firebase hosting
+- **live production url**: [https://letters-mit-museum-brain.web.app](https://letters-mit-museum-brain.web.app)
 ```bash
 # install firebase cli if needed
 npm install -g firebase-tools
 
 # login and emulate locally
-firebase serve
+npm start # or: firebase serve --only hosting:letters-mit-museum-brain
 
 # deploy live to production
-firebase deploy --only hosting
+npm run deploy # or: firebase deploy --only hosting:letters-mit-museum-brain
 ```
 
 ---
@@ -194,3 +196,4 @@ the script resamples images to $384\times 384$ lanczos squares and compiles `mus
 ## license
 
 mit license. copyright (c) 2026 erick oduniyi / mit media lab.
+

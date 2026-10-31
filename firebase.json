@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "letters-mit-museum-brain",
     "public": "public",
     "ignore": [
       "firebase.json",
@@ -52,3 +53,4 @@
     ]
   }
 }
+
