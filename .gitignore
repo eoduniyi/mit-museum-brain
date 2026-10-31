@@ -1,0 +1,27 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Firebase cache
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Node dependencies
+node_modules/
+
+# Python cache & TeX auxiliary files
+__pycache__/
+*.pyc
+*.aux
+*.log
+*.out
+*.synctex.gz
+
+# Local editor and environment
+.env
+.env.local
+.vscode/
+.idea/
