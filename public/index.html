@@ -526,6 +526,417 @@
       border-radius: 4px;
       color: var(--text);
     }
+
+    /* glowing green hand indicator on controls button */
+    .ctrl-hand-icon {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      color: #10b981;
+      margin-right: 4px;
+      vertical-align: -1.5px;
+      filter: drop-shadow(0 0 4.5px rgba(16, 185, 129, 0.85));
+      transition: color 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+    }
+    .ctrl-hand-icon.paused {
+      color: #9ca3af;
+      filter: none;
+    }
+    #btn-open-controls:hover .ctrl-hand-icon {
+      transform: scale(1.12);
+    }
+
+    .mode-short {
+      display: none;
+    }
+
+    #header-intensity-control,
+    .header-dynamics-group {
+      display: none;
+    }
+
+    /* controls drawer & physical parameter rack */
+    .controls-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 14, 20, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.controls-open .controls-drawer-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .controls-drawer {
+      position: fixed;
+      top: 58px;
+      right: 24px;
+      width: 380px;
+      max-height: calc(100vh - 80px);
+      background: var(--modal-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.8),
+        0 18px 48px rgba(15, 18, 24, 0.22);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      z-index: 85;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px) scale(0.98);
+      transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    body.dark-mode .controls-drawer {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 24px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    body.controls-open .controls-drawer {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    .drawer-handle-bar {
+      display: none;
+      justify-content: center;
+      padding-bottom: 6px;
+    }
+
+    .drawer-handle {
+      width: 38px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border-focus);
+      opacity: 0.7;
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .drawer-title-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .drawer-title {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+
+    .drawer-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .drawer-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .drawer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .drawer-section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drawer-val-readout {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .drawer-mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .drawer-mode-tile {
+      background: rgba(128, 128, 128, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+
+    .drawer-mode-tile:hover {
+      border-color: var(--border-focus);
+    }
+
+    .drawer-mode-tile.active {
+      border-color: var(--pill-active-bg);
+      background: var(--pill-active-bg);
+      color: var(--pill-active-text);
+      font-weight: 500;
+    }
+
+    .drawer-mode-tile .tile-name {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .drawer-mode-tile .tile-desc {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      opacity: 0.75;
+    }
+
+    .drawer-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(128, 128, 128, 0.04);
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .drawer-slider-row input[type="range"] {
+      width: 100%;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .drawer-slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--text);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .drawer-toggle-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(128, 128, 128, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 12px;
+    }
+
+    .drawer-toggle-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drawer-toggle-item .toggle-name {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text);
+    }
+
+    .drawer-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .drawer-action-btn {
+      text-align: center;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+    }
+
+    .drawer-meta-section {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--text-muted);
+    }
+
+    .drawer-meta-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+    }
+
+    .drawer-mono {
+      color: var(--text);
+    }
+
+    /* responsive media queries: mobile, tablet, desktop */
+    @media (max-width: 1100px) {
+      .header-dynamics-group {
+        display: none;
+      }
+    }
+
+    @media (max-width: 860px) {
+      #header-intensity-control {
+        display: none;
+      }
+      .workbench-card {
+        width: min(94vw, 560px);
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 18px 16px;
+        gap: 12px;
+      }
+      .workbench-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .workbench-header .workbench-controls-inline {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .workbench-canvas-row {
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+      }
+      .draw-canvas-box, .diffuse-canvas-box {
+        width: min(84vw, 320px);
+        height: min(84vw, 320px);
+      }
+      .workbench-instructions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        font-size: 9px;
+      }
+      .workbench-instructions .btn-pill {
+        align-self: center;
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 0 12px;
+        height: 48px;
+        max-width: 100vw;
+        overflow: hidden;
+      }
+      .gallery-title .title-sub,
+      .gallery-title .title-sep {
+        display: none;
+      }
+      main.grid-viewport {
+        top: 48px;
+        bottom: 34px;
+        padding: 8px;
+      }
+      .grid-5x5 {
+        width: min(88vw, 68vh);
+        height: min(88vw, 68vh);
+      }
+      .cell-badge {
+        font-size: 7.5px;
+        padding: 1px 4px;
+        bottom: 3px;
+        left: 3px;
+        border-radius: 4px;
+        max-width: calc(100% - 6px);
+      }
+      footer {
+        padding: 0 14px;
+        font-size: 9px;
+      }
+      .controls-drawer {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 82vh;
+        border-bottom: none;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 18px 28px 18px;
+        transform: translateY(100%);
+      }
+      .drawer-handle-bar {
+        display: flex;
+      }
+      body.controls-open .controls-drawer {
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .mode-long {
+        display: none;
+      }
+      .mode-short {
+        display: inline;
+      }
+      .mode-group .btn-pill {
+        padding: 3px 6px;
+        font-size: 9px;
+      }
+      .btn-pill {
+        padding: 3px 7px;
+        font-size: 9px;
+      }
+      .gallery-actions {
+        gap: 4px;
+      }
+      .gallery-title {
+        font-size: 10px;
+      }
+    }
   </style>
 
   <!-- untainted local base64 corpus of the 25 authentic mit museum photographs -->
@@ -538,28 +949,41 @@
 
   <header>
     <div class="gallery-title">
-      mit museum <span>/</span> thinking cells frozen and in motion
+      mit museum <span class="title-sep">/</span> <span class="title-sub">thinking cells</span>
     </div>
     <div class="gallery-actions">
+      <!-- 1. Morphometry Engine Switcher -->
       <div class="mode-group" id="filter-mode-group">
         <button class="btn-pill active" data-mode="dino-etch">etch</button>
-        <button class="btn-pill" data-mode="reaction">reaction</button>
+        <button class="btn-pill" data-mode="reaction"><span class="mode-long">reaction</span><span class="mode-short">rxn</span></button>
         <button class="btn-pill" data-mode="flow">flow</button>
-        <button class="btn-pill" data-mode="halftone">halftone</button>
+        <button class="btn-pill" data-mode="halftone"><span class="mode-long">halftone</span><span class="mode-short">half</span></button>
       </div>
 
-      <div class="slider-control">
+      <!-- 2. Intensity Slider (desktop) -->
+      <div class="slider-control" id="header-intensity-control">
         <span>intensity</span>
         <input type="range" id="intensity-slider" min="15" max="100" value="90">
         <span id="intensity-val">90%</span>
       </div>
 
-      <button id="btn-toggle-dance" class="btn-pill active">dance</button>
-      <button id="btn-shuffle-now" class="btn-pill">swap now</button>
-      <button id="btn-toggle-stream" class="btn-pill active">stream</button>
-      <button id="btn-lock-all" class="btn-pill">hold all</button>
-      <button id="btn-toggle-tags" class="btn-pill active">tags</button>
-      <button id="btn-theme-toggle" class="btn-pill">light</button>
+      <!-- 3. Desktop Dynamics Group -->
+      <div class="header-dynamics-group">
+        <button id="btn-toggle-stream" class="btn-pill active" title="toggle streaming updates">stream</button>
+        <button id="btn-toggle-dance" class="btn-pill active" title="toggle spring choreography">dance</button>
+        <button id="btn-toggle-tags" class="btn-pill active" title="toggle specimen badges">tags</button>
+      </div>
+
+      <!-- 4. Unified Controls Rack / Drawer Trigger -->
+      <button id="btn-open-controls" class="btn-pill" title="open physical instrument controls & parameters">
+        <svg class="ctrl-hand-icon" id="ctrl-indicator-dot" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8.5 1.75a.75.75 0 0 0-1.5 0V6.5a.25.25 0 0 1-.5 0V2.75a.75.75 0 0 0-1.5 0V7a.25.25 0 0 1-.5 0V3.75a.75.75 0 0 0-1.5 0v5.61l-1.02-.68a.92.92 0 0 0-1.28.25.92.92 0 0 0 .18 1.22l3.15 2.76A3.75 3.75 0 0 0 6.5 13.8h3a3.5 3.5 0 0 0 3.5-3.5V4.75a.75.75 0 0 0-1.5 0V7.5a.25.25 0 0 1-.5 0V2.75a.75.75 0 0 0-1.5 0V6.5a.25.25 0 0 1-.5 0V1.75Z"/>
+        </svg>
+        <span>controls</span>
+      </button>
+
+      <!-- 5. Theme Toggle -->
+      <button id="btn-theme-toggle" class="btn-pill" title="switch light/dark mode">light</button>
     </div>
   </header>
 
@@ -573,6 +997,99 @@
     <span id="footer-status">select any object to guide diffusion</span>
     <span id="model-status">live · 60fps</span>
   </footer>
+
+  <!-- physical instrument parameter drawer / bottom sheet -->
+  <div class="controls-drawer-backdrop" id="controls-drawer-backdrop"></div>
+  <aside class="controls-drawer" id="controls-drawer" aria-label="instrument parameters">
+    <div class="drawer-handle-bar"><span class="drawer-handle"></span></div>
+    <div class="drawer-header">
+      <div class="drawer-title-box">
+        <span class="drawer-title">instrument parameters</span>
+        <span class="drawer-sub">cellular morphometry & dynamics</span>
+      </div>
+      <button id="btn-close-controls" class="workbench-close">close</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Section 1: Morphometry Engine Algorithm -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">morphometry algorithm</div>
+        <div class="drawer-mode-grid" id="drawer-mode-grid">
+          <button class="drawer-mode-tile active" data-mode="dino-etch">
+            <span class="tile-name">etch</span>
+            <span class="tile-desc">dino edge hatch</span>
+          </button>
+          <button class="drawer-mode-tile" data-mode="reaction">
+            <span class="tile-name">reaction</span>
+            <span class="tile-desc">turing morphogenesis</span>
+          </button>
+          <button class="drawer-mode-tile" data-mode="flow">
+            <span class="tile-name">flow</span>
+            <span class="tile-desc">vector field curl</span>
+          </button>
+          <button class="drawer-mode-tile" data-mode="halftone">
+            <span class="tile-name">halftone</span>
+            <span class="tile-desc">stochastic raster</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 2: Filter Intensity -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <span>filter intensity</span>
+          <span id="drawer-intensity-val" class="drawer-val-readout">90%</span>
+        </div>
+        <div class="drawer-slider-row">
+          <input type="range" id="drawer-intensity-slider" min="15" max="100" value="90">
+        </div>
+      </div>
+
+      <!-- Section 3: Dynamics & State Toggles -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">temporal dynamics & display</div>
+        <div class="drawer-toggle-row">
+          <div class="drawer-toggle-item">
+            <span class="toggle-name">streaming updates</span>
+            <button id="drawer-btn-stream" class="btn-pill active">stream: on</button>
+          </div>
+          <div class="drawer-toggle-item">
+            <span class="toggle-name">spring choreography</span>
+            <button id="drawer-btn-dance" class="btn-pill active">dance: on</button>
+          </div>
+          <div class="drawer-toggle-item">
+            <span class="toggle-name">specimen badges</span>
+            <button id="drawer-btn-tags" class="btn-pill active">tags: on</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Arrangement Operations -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">matrix operations</div>
+        <div class="drawer-actions-grid">
+          <button id="btn-shuffle-now" class="btn-pill drawer-action-btn">swap arrangement</button>
+          <button id="btn-lock-all" class="btn-pill drawer-action-btn">hold / lock all</button>
+        </div>
+      </div>
+
+      <!-- Section 5: Hardware & Diagnostics -->
+      <div class="drawer-section drawer-meta-section">
+        <div class="drawer-meta-line">
+          <span>runtime</span>
+          <span class="drawer-mono" id="drawer-runtime-val">onnx webgl · ready</span>
+        </div>
+        <div class="drawer-meta-line">
+          <span>matrix stage</span>
+          <span class="drawer-mono">25 cells · spring-damper euler</span>
+        </div>
+        <div class="drawer-meta-line">
+          <span>corpus</span>
+          <span class="drawer-mono">mit museum accession archive</span>
+        </div>
+      </div>
+    </div>
+  </aside>
 
   <!-- interactive dino diffusion workbench modal -->
   <div class="workbench-modal" id="workbench-modal">
@@ -688,15 +1205,17 @@
 
     // compute pixel coordinates of a slot (0..24) inside .grid-5x5
     function getSlotRect(slotIdx) {
-      const stageW = matrixGrid.clientWidth || 720;
-      const stageH = matrixGrid.clientHeight || 720;
-      const cellW = (stageW - GAP_PX * 4) / 5;
-      const cellH = (stageH - GAP_PX * 4) / 5;
+      const rect = matrixGrid.getBoundingClientRect();
+      const stageW = (rect.width > 50) ? rect.width : (matrixGrid.clientWidth || (window.innerWidth < 600 ? window.innerWidth * 0.90 : 720));
+      const stageH = (rect.height > 50) ? rect.height : (matrixGrid.clientHeight || stageW);
+      const effectiveGap = stageW < 440 ? 5 : (stageW < 700 ? 7 : GAP_PX);
+      const cellW = (stageW - effectiveGap * 4) / 5;
+      const cellH = (stageH - effectiveGap * 4) / 5;
       const row = Math.floor(slotIdx / 5);
       const col = slotIdx % 5;
       return {
-        x: col * (cellW + GAP_PX),
-        y: row * (cellH + GAP_PX),
+        x: col * (cellW + effectiveGap),
+        y: row * (cellH + effectiveGap),
         w: cellW,
         h: cellH
       };
@@ -906,8 +1425,8 @@
       cellElements.push(cellObj);
     });
 
-    // handle window resize cleanly
-    window.addEventListener('resize', () => {
+    // handle window resize & orientation change cleanly
+    function refreshGridSlotDimensions() {
       cellElements.forEach(cell => {
         const r = getSlotRect(cell.slotIndex);
         cell.card.style.width = `${r.w}px`;
@@ -917,9 +1436,18 @@
         if (!cell.isSwapping) {
           cell.x = r.x;
           cell.y = r.y;
+          cell.card.style.transform = `translate3d(${r.x}px, ${r.y}px, 0)`;
         }
       });
-    });
+    }
+
+    window.addEventListener('resize', refreshGridSlotDimensions);
+    window.addEventListener('orientationchange', () => setTimeout(refreshGridSlotDimensions, 100));
+    window.addEventListener('load', refreshGridSlotDimensions);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => refreshGridSlotDimensions()).observe(matrixGrid);
+    }
+    requestAnimationFrame(refreshGridSlotDimensions);
 
     // --- Choreographed Orbital Swaps & Quartet Waltzes ---
     function startCycleSwap(slotIndices, arcScale = 1.0, speed = 0.021) {
@@ -1287,45 +1815,110 @@
 
     requestAnimationFrame(masterAnimationLoop);
 
-    // --- Header Controls ---
-    document.querySelectorAll('#filter-mode-group .btn-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#filter-mode-group .btn-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeFilterMode = btn.dataset.mode;
-        SPECIMENS.forEach((_, idx) => {
-          if (lockAllDiffused || idx % 2 === 0) igniteCellDiffusion(idx, true);
-        });
+    // --- Physical Instrument Controls & Synchronized State ---
+    const btnOpenControls = document.getElementById('btn-open-controls');
+    const btnCloseControls = document.getElementById('btn-close-controls');
+    const controlsBackdrop = document.getElementById('controls-drawer-backdrop');
+
+    function toggleControlsDrawer(forceState) {
+      const open = (typeof forceState === 'boolean') ? forceState : !document.body.classList.contains('controls-open');
+      document.body.classList.toggle('controls-open', open);
+    }
+
+    if (btnOpenControls) btnOpenControls.addEventListener('click', () => toggleControlsDrawer());
+    if (btnCloseControls) btnCloseControls.addEventListener('click', () => toggleControlsDrawer(false));
+    if (controlsBackdrop) controlsBackdrop.addEventListener('click', () => toggleControlsDrawer(false));
+
+    function updateCtrlIndicator() {
+      const dot = document.getElementById('ctrl-indicator-dot');
+      if (!dot) return;
+      if (isStreamActive || isDanceActive) {
+        dot.classList.remove('paused');
+      } else {
+        dot.classList.add('paused');
+      }
+    }
+
+    function setFilterMode(mode) {
+      activeFilterMode = mode;
+      document.querySelectorAll('#filter-mode-group .btn-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
       });
+      document.querySelectorAll('#drawer-mode-grid .drawer-mode-tile').forEach(t => {
+        t.classList.toggle('active', t.dataset.mode === mode);
+      });
+      SPECIMENS.forEach((_, idx) => {
+        if (lockAllDiffused || idx % 2 === 0) igniteCellDiffusion(idx, true);
+      });
+    }
+
+    document.querySelectorAll('#filter-mode-group .btn-pill').forEach(btn => {
+      btn.addEventListener('click', () => setFilterMode(btn.dataset.mode));
+    });
+    document.querySelectorAll('#drawer-mode-grid .drawer-mode-tile').forEach(tile => {
+      tile.addEventListener('click', () => setFilterMode(tile.dataset.mode));
     });
 
     const intensitySlider = document.getElementById('intensity-slider');
     const intensityVal = document.getElementById('intensity-val');
-    intensitySlider.addEventListener('input', (e) => {
-      filterIntensity = parseInt(e.target.value, 10) / 100.0;
-      intensityVal.innerText = `${e.target.value}%`;
+    const drawerIntensitySlider = document.getElementById('drawer-intensity-slider');
+    const drawerIntensityVal = document.getElementById('drawer-intensity-val');
+
+    function updateIntensity(val) {
+      filterIntensity = parseInt(val, 10) / 100.0;
+      if (intensityVal) intensityVal.innerText = `${val}%`;
+      if (drawerIntensityVal) drawerIntensityVal.innerText = `${val}%`;
+      if (intensitySlider) intensitySlider.value = val;
+      if (drawerIntensitySlider) drawerIntensitySlider.value = val;
       cellElements.forEach(c => {
         if (c.active) renderCellDiffusionFrame(c, globalTick);
       });
-    });
+    }
+
+    if (intensitySlider) {
+      intensitySlider.addEventListener('input', (e) => updateIntensity(e.target.value));
+    }
+    if (drawerIntensitySlider) {
+      drawerIntensitySlider.addEventListener('input', (e) => updateIntensity(e.target.value));
+    }
+
+    const btnToggleStream = document.getElementById('btn-toggle-stream');
+    const drawerBtnStream = document.getElementById('drawer-btn-stream');
+    function setStreamState(state) {
+      isStreamActive = state;
+      if (btnToggleStream) {
+        btnToggleStream.classList.toggle('active', isStreamActive);
+        btnToggleStream.innerText = isStreamActive ? 'stream' : 'paused';
+      }
+      if (drawerBtnStream) {
+        drawerBtnStream.classList.toggle('active', isStreamActive);
+        drawerBtnStream.innerText = isStreamActive ? 'stream: on' : 'stream: off';
+      }
+      updateCtrlIndicator();
+    }
+    if (btnToggleStream) btnToggleStream.addEventListener('click', () => setStreamState(!isStreamActive));
+    if (drawerBtnStream) drawerBtnStream.addEventListener('click', () => setStreamState(!isStreamActive));
 
     const btnToggleDance = document.getElementById('btn-toggle-dance');
-    btnToggleDance.addEventListener('click', () => {
-      isDanceActive = !isDanceActive;
-      btnToggleDance.classList.toggle('active', isDanceActive);
-      btnToggleDance.innerText = isDanceActive ? 'dance' : 'static';
+    const drawerBtnDance = document.getElementById('drawer-btn-dance');
+    function setDanceState(state) {
+      isDanceActive = state;
+      if (btnToggleDance) {
+        btnToggleDance.classList.toggle('active', isDanceActive);
+        btnToggleDance.innerText = isDanceActive ? 'dance' : 'static';
+      }
+      if (drawerBtnDance) {
+        drawerBtnDance.classList.toggle('active', isDanceActive);
+        drawerBtnDance.innerText = isDanceActive ? 'dance: on' : 'dance: off';
+      }
+      updateCtrlIndicator();
       if (isDanceActive) triggerChoreographyStep();
-    });
+    }
+    if (btnToggleDance) btnToggleDance.addEventListener('click', () => setDanceState(!isDanceActive));
+    if (drawerBtnDance) drawerBtnDance.addEventListener('click', () => setDanceState(!isDanceActive));
 
     document.getElementById('btn-shuffle-now').addEventListener('click', () => {
       triggerGrandEnsembleDance();
-    });
-
-    const btnToggleStream = document.getElementById('btn-toggle-stream');
-    btnToggleStream.addEventListener('click', () => {
-      isStreamActive = !isStreamActive;
-      btnToggleStream.classList.toggle('active', isStreamActive);
-      btnToggleStream.innerText = isStreamActive ? 'stream' : 'paused';
     });
 
     const btnLockAll = document.getElementById('btn-lock-all');
@@ -1341,13 +1934,22 @@
     });
 
     const btnToggleTags = document.getElementById('btn-toggle-tags');
+    const drawerBtnTags = document.getElementById('drawer-btn-tags');
     let showTags = true;
-    btnToggleTags.addEventListener('click', () => {
-      showTags = !showTags;
+    function setTagsState(state) {
+      showTags = state;
       document.body.classList.toggle('hide-tags', !showTags);
-      btnToggleTags.classList.toggle('active', showTags);
-      btnToggleTags.innerText = showTags ? 'tags' : 'no tags';
-    });
+      if (btnToggleTags) {
+        btnToggleTags.classList.toggle('active', showTags);
+        btnToggleTags.innerText = showTags ? 'tags' : 'no tags';
+      }
+      if (drawerBtnTags) {
+        drawerBtnTags.classList.toggle('active', showTags);
+        drawerBtnTags.innerText = showTags ? 'tags: on' : 'tags: off';
+      }
+    }
+    if (btnToggleTags) btnToggleTags.addEventListener('click', () => setTagsState(!showTags));
+    if (drawerBtnTags) drawerBtnTags.addEventListener('click', () => setTagsState(!showTags));
 
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
     btnThemeToggle.addEventListener('click', () => {
@@ -1690,7 +2292,10 @@
     });
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeWorkbench();
+      if (e.key === 'Escape') {
+        if (document.body.classList.contains('controls-open')) toggleControlsDrawer(false);
+        if (workbenchModal.classList.contains('open')) closeWorkbench();
+      }
       if (workbenchModal.classList.contains('open')) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -1722,7 +2327,14 @@
       const rect = inputCanvas.getBoundingClientRect();
       const x = Math.floor(((e.clientX - rect.left) / rect.width) * 64);
       const y = Math.floor(((e.clientY - rect.top) / rect.height) * 64);
-      return [x, y];
+      return [clamp(x, 0, 63), clamp(y, 0, 63)];
+    }
+
+    function getTouchCoords(touch) {
+      const rect = inputCanvas.getBoundingClientRect();
+      const x = Math.floor(((touch.clientX - rect.left) / rect.width) * 64);
+      const y = Math.floor(((touch.clientY - rect.top) / rect.height) * 64);
+      return [clamp(x, 0, 63), clamp(y, 0, 63)];
     }
 
     inputCanvas.addEventListener('mousedown', (e) => {
@@ -1745,6 +2357,35 @@
         triggerWorkbenchDiffusion();
       }
     });
+
+    // touch drawing support for mobile / touchscreens
+    inputCanvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        isDrawing = true;
+        const [x, y] = getTouchCoords(e.touches[0]);
+        inputCtx.fillStyle = '#000000';
+        inputCtx.fillRect(x - 1, y - 1, 3, 3);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDrawing || !workbenchModal.classList.contains('open')) return;
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        const [x, y] = getTouchCoords(e.touches[0]);
+        inputCtx.fillStyle = '#000000';
+        inputCtx.fillRect(x - 1, y - 1, 3, 3);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', (e) => {
+      if (isDrawing) {
+        e.preventDefault();
+        isDrawing = false;
+        triggerWorkbenchDiffusion();
+      }
+    }, { passive: false });
 
     btnRunDiffusion.addEventListener('click', triggerWorkbenchDiffusion);
 

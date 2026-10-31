@@ -1,9 +1,6 @@
 # mit-museum-brain
 ### Thinking Cells Frozen and in Motion
 
-[![firebase hosting](https://img.shields.io/badge/firebase-hosting-orange.svg)](https://letters-mitmuseum-brain.web.app)
-[![site 1](https://img.shields.io/badge/site-letters--mitmuseum--brain.web.app-brightgreen.svg)](https://letters-mitmuseum-brain.web.app)
-[![site 2](https://img.shields.io/badge/mirror-letters--mit--museum--brain.web.app-blue.svg)](https://letters-mit-museum-brain.web.app)
 [![onnx webgl](https://img.shields.io/badge/onnx-runtime--web-blue.svg)](https://onnxruntime.ai/)
 [![license: mit](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -122,17 +119,16 @@ npx serve public
 ```
 
 ### option c: firebase hosting
-- **primary target**: [https://letters-mitmuseum-brain.web.app](https://letters-mitmuseum-brain.web.app)
-- **alternate mirror**: [https://letters-mit-museum-brain.web.app](https://letters-mit-museum-brain.web.app)
+- **live production url**: [https://letters-mitmuseum-brain.web.app](https://letters-mitmuseum-brain.web.app)
 ```bash
 # install firebase cli if needed
 npm install -g firebase-tools
 
 # login and emulate locally
-npm start # or: firebase serve --only hosting
+npm start # or: firebase serve --only hosting:letters-mitmuseum-brain
 
-# deploy simultaneously to both sites
-npm run deploy # or: firebase deploy --only hosting
+# deploy live to production
+npm run deploy # or: firebase deploy --only hosting:letters-mitmuseum-brain
 ```
 
 ---

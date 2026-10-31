@@ -4,11 +4,9 @@
   "description": "thinking cells frozen and in motion: interactive cellular morphometry and latent diffusion for the mit museum",
   "main": "public/index.html",
   "scripts": {
-    "start": "firebase serve --only hosting",
+    "start": "firebase serve --only hosting:letters-mitmuseum-brain",
     "serve": "npx serve public",
-    "deploy": "firebase deploy --only hosting",
-    "deploy:hyphen": "firebase deploy --only hosting:letters-mit-museum-brain",
-    "deploy:alias": "firebase deploy --only hosting:letters-mitmuseum-brain"
+    "deploy": "firebase deploy --only hosting:letters-mitmuseum-brain"
   },
   "keywords": [
     "mit-museum",
