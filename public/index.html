@@ -533,13 +533,15 @@
       width: 11px;
       height: 11px;
       color: #10b981;
+      opacity: 0.9;
       margin-right: 4px;
       vertical-align: -1.5px;
-      filter: drop-shadow(0 0 4.5px rgba(16, 185, 129, 0.85));
-      transition: color 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+      filter: drop-shadow(0 0 2.5px rgba(16, 185, 129, 0.36)) drop-shadow(0 0 6px rgba(16, 185, 129, 0.16));
+      transition: color 0.25s ease, filter 0.25s ease, opacity 0.25s ease, transform 0.2s ease;
     }
     .ctrl-hand-icon.paused {
       color: #9ca3af;
+      opacity: 0.65;
       filter: none;
     }
     #btn-open-controls:hover .ctrl-hand-icon {
