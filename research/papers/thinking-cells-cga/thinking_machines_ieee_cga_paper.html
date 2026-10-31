@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thinking Cells Frozen and in Motion</title>
+  <!-- KaTeX for Mathematical Typesetting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] });"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --ink: #111318;
+      --ink-muted: #525866;
+      --ink-light: #7c828f;
+      --accent: #b82914;
+      --paper: #ffffff;
+      --paper-tint: #f6f5f1;
+      --rule: #d8dadf;
+      --rule-heavy: #111318;
+      --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+      --font-mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #e4e3de;
+      color: var(--ink);
+      font-family: var(--font-serif);
+      font-size: 8.85pt;
+      line-height: 1.42;
+      -webkit-font-smoothing: antialiased;
+      padding: 24px 0;
+    }
+
+    /* Magazine Page Sheet Container (US Letter 8.5 x 11 in) */
+    .magazine-sheet {
+      width: 8.5in;
+      height: 11in;
+      margin: 0 auto 24px auto;
+      background: var(--paper);
+      padding: 0.46in 0.56in 0.44in 0.56in;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      break-after: page;
+      overflow: hidden;
+    }
+
+    /* Top Running Masthead */
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 2px solid var(--rule-heavy);
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+      font-family: var(--font-sans);
+      font-size: 7pt;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+
+    .masthead-dept {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+
+    /* Feature Title Block */
+    .article-header {
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 8px;
+    }
+
+    .kicker {
+      font-family: var(--font-sans);
+      font-size: 7.8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    h1.article-title {
+      font-family: var(--font-sans);
+      font-size: 22.5pt;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .article-deck {
+      font-family: var(--font-sans);
+      font-size: 9.4pt;
+      font-weight: 400;
+      line-height: 1.32;
+      color: var(--ink-muted);
+      margin-bottom: 7px;
+      text-align: justify;
+      text-justify: inter-word;
+      hyphens: auto;
+    }
+
+    .byline-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-sans);
+      font-size: 7.8pt;
+      color: var(--ink);
+      background: var(--paper-tint);
+      padding: 4px 9px;
+      border-left: 3px solid var(--accent);
+      white-space: nowrap;
+    }
+
+    .byline-author strong {
+      font-weight: 700;
+    }
+
+    .byline-meta {
+      font-family: var(--font-mono);
+      font-size: 7.2pt;
+      color: var(--ink-muted);
+    }
+
+    /* Two-Column Magazine Editorial Grid */
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 0.26in;
+      width: 100%;
+      align-items: start;
+    }
+
+    .col {
+      min-width: 0;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    p, li, .caption, .sidebar-box, .abstract-box {
+      text-align: justify;
+      text-justify: inter-word;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      word-break: normal;
+    }
+
+    p.lead-para::first-letter {
+      float: left;
+      font-family: var(--font-sans);
+      font-size: 27pt;
+      line-height: 0.82;
+      padding-top: 3px;
+      padding-right: 6px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    h2.sec-head {
+      font-family: var(--font-sans);
+      font-size: 9.3pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+      border-bottom: 1.5px solid var(--ink);
+      padding-bottom: 2px;
+      margin-top: 4px;
+      margin-bottom: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    h2.sec-head span.sec-num {
+      color: var(--accent);
+      margin-right: 5px;
+    }
+
+    h3.sub-head {
+      font-family: var(--font-sans);
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: var(--ink);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Magazine Pull Quote / Abstract Box */
+    .abstract-box {
+      background: var(--paper-tint);
+      border-top: 2px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      padding: 7px 9px;
+      font-family: var(--font-sans);
+      font-size: 8pt;
+      line-height: 1.34;
+      margin-bottom: 2px;
+    }
+
+    .abstract-box strong {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      font-size: 7.2pt;
+      display: block;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    /* Figures and Captions */
+    .figure-box {
+      margin: 2px 0;
+      border: 1px solid var(--rule);
+      background: #fafafa;
+      padding: 5px;
+    }
+
+    .figure-full {
+      width: 100%;
+      margin: 2px 0 6px 0;
+      border: 1px solid var(--rule);
+      background: var(--paper-tint);
+      padding: 5px;
+    }
+
+    .figure-box img, .figure-full img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .caption {
+      font-family: var(--font-sans);
+      font-size: 7.2pt;
+      line-height: 1.28;
+      color: var(--ink-muted);
+      margin-top: 4px;
+    }
+
+    .caption strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    /* Equations */
+    .eq-block {
+      background: #fafaf8;
+      border-top: none;
+      border-right: none;
+      border-bottom: none;
+      border-left: 3.5px solid;
+      border-image: linear-gradient(180deg, #ff3b30 0%, #ff9500 18%, #ffd60a 36%, #34c759 54%, #007aff 72%, #5856d6 88%, #af52de 100%) 1;
+      padding: 2.5px 6px 2.5px 8px;
+      margin: 1.5px 0;
+      font-size: 7.9pt;
+      width: 100%;
+      overflow-x: hidden;
+      text-align: center;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .eq-block .katex-display {
+      margin: 0.22em 0;
+    }
+
+    /* Code and Algorithm Listings */
+    pre.code-box {
+      background: #14161b;
+      color: #e6e8ee;
+      font-family: var(--font-mono);
+      font-size: 6.35pt;
+      line-height: 1.32;
+      padding: 5px 7px;
+      border-radius: 2px;
+      margin: 1px 0 3px 0;
+      white-space: pre;
+      overflow-x: hidden;
+      text-align: left;
+      hyphens: none;
+    }
+
+    pre.code-box code {
+      font-family: inherit;
+      font-size: inherit;
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    .code-header {
+      font-family: var(--font-sans);
+      font-size: 6.8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--ink);
+      color: #fff;
+      padding: 2px 6px;
+      margin-top: 2px;
+      display: flex;
+      justify-content: space-between;
+      white-space: nowrap;
+    }
+
+    /* Magazine Sidebar / Callout Box */
+    .sidebar-box {
+      background: var(--paper-tint);
+      border: 1px solid var(--rule);
+      border-top: 2.5px solid var(--accent);
+      padding: 6px 8px;
+      font-family: var(--font-sans);
+      font-size: 7.5pt;
+      line-height: 1.3;
+      margin: 2px 0;
+    }
+
+    .sidebar-title {
+      font-size: 7.6pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 3px;
+      white-space: nowrap;
+    }
+
+    .sidebar-box ul, .col ul, .col ol {
+      padding-left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 7.4pt;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 0.5px 3px;
+      border-radius: 2px;
+    }
+
+    /* Benchmark and Specification Table */
+    table.mag-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 7.1pt;
+      margin: 2px 0;
+      table-layout: fixed;
+    }
+
+    table.mag-table th {
+      background: var(--ink);
+      color: #fff;
+      text-align: left;
+      padding: 3px 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    table.mag-table td {
+      padding: 2.5px 5px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ink);
+      overflow-wrap: break-word;
+    }
+
+    table.mag-table tr:nth-child(even) td {
+      background: var(--paper-tint);
+    }
+
+    /* Page Footer */
+    .page-footer {
+      border-top: 1px solid var(--rule);
+      padding-top: 4px;
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-sans);
+      font-size: 6.8pt;
+      color: var(--ink-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .page-num {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .magazine-sheet {
+        margin: 0;
+        box-shadow: none;
+        width: 8.5in;
+        height: 11in;
+      }
+      @page {
+        size: letter portrait;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================================
+       PAGE 1: TITLE, ABSTRACT, THESIS, RELATED WORK AND GALLERY VIEWS
+       ===================================================================== -->
+  <section class="magazine-sheet">
+    <div>
+      <div class="masthead">
+        <span class="masthead-dept">Curatorial Computation</span>
+        <span>Working Manuscript</span>
+      </div>
+
+      <div class="article-header">
+        <div class="kicker">Generative Museology and Kinetic Systems</div>
+        <h1 class="article-title">Thinking Cells Frozen and in Motion</h1>
+        <div class="article-deck">
+          Botanical diffusion and kinetic choreography for museum collections.
+        </div>
+        <div class="byline-bar">
+          <div class="byline-author"><strong>Erick Oduniyi</strong></div>
+          <div class="byline-meta">Design and Computation</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Left Column -->
+        <div class="col">
+          <div class="abstract-box">
+            <strong>Abstract</strong>
+            Digital museum catalogs often present holdings as static thumbnail tables or isolated three-dimensional meshes that strip objects of relational context. We introduce <em>Thinking Cells Frozen and in Motion</em>, a client-side web installation built with twenty-five photographs from the MIT Museum collection. Each specimen remains <em>frozen</em> as an archival photographic record while entering <em>motion</em> through morphological shaders, an edge-conditioned ONNX diffusion network, and planar orbital swaps. Conditioning a compact U-Net trained on nineteenth-century botanical drawings with the contours of naval half-hulls, strobe photographs, and lab logs stages a visual dialogue between biological growth and engineered instruments.
+          </div>
+
+          <p class="lead-para">
+            Museums of science and technology steward artifacts that capture physical processes frozen at a decisive instant, whether a microsecond strobe flash by Harold Edgerton, annual timber rings in a cypress core, or cursive notes in a laboratory log. When published online, standard search grids isolate each record in a static cell, whereas three-dimensional scanners favor metallic hardware over textiles, paper, and biological media.
+          </p>
+
+          <p>
+            Building on Whitelaw's concept of generous interfaces [1], we ask how a flat collection grid behaves when every tile operates as a coupled visual cell. Rather than synthesizing ungrounded imagery from text prompts, our system anchors every operation in verified collection photographs that define spatial boundary conditions for reaction-diffusion waves [2, 3], curl-noise advection [4], and client-side denoising diffusion [5, 6, 7].
+          </p>
+
+          <p>
+            Crucially, the interactive workbench pairs MIT Museum artifacts with an eight megabyte U-Net trained on historic botanical drawings [6]. Conditioned on the binary Sobel silhouette of a carved pine hull or an interferometer image, the network projects organic stippling and foliate veins across engineered forms. This cross-domain mismatch surfaces structural homologies between natural morphogenesis and scientific instruments while periodically dissolving back to the unretouched photograph.
+          </p>
+
+          <h2 class="sec-head"><span class="sec-num">01</span>Design Principles</h2>
+          <ul>
+            <li><strong>Archival Grounding:</strong> Twenty-five MIT Museum photographs spanning 1888 to 2025 represent fiber, wood, pulp paper, glass emulsion, agar cultures, and brass instruments.</li>
+            <li><strong>Frozen and Kinetic Duality:</strong> Cells alternate between unretouched photographic clarity and active morphological synthesis so filtering never obscures the primary source.</li>
+          </ul>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col">
+          <ul>
+            <li><strong>Botanical Cross-Reading:</strong> Edge-conditioned inference projects a botanical drawing prior onto technical artifacts, inviting visitors to compare organic and mechanical line structures.</li>
+            <li><strong>Planar Orbital Choreography:</strong> Tiles detach from fixed table indices to execute partner waltzes, triad carousels, and quartet pinwheels along curved normal-vector trajectories.</li>
+          </ul>
+
+          <div class="figure-box">
+            <img src="assets/fig_light_dance.png" alt="Light mode gallery with orbital square choreography">
+            <div class="caption">
+              <strong>Figure 1.</strong> Light mode gallery view (<code>#f5f4f0</code> paper ground). In the lower left, the <em>marine survey</em> and <em>materials lab</em> cells elevate and curve around each other along opposite normal vectors while adjacent cells render Atkinson stipple plates.
+            </div>
+          </div>
+
+          <div class="figure-box">
+            <img src="assets/fig_dark_stream.png" alt="Dark mode gallery with multi-cell diffusion">
+            <div class="caption">
+              <strong>Figure 2.</strong> Dark mode gallery state during a multi-cell ensemble swap, showing coarse-to-fine block denoising converging onto Sobel contours across twenty-five collection specimens.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>WORKING MANUSCRIPT</span>
+      <span>CURATORIAL COMPUTATION</span>
+      <span class="page-num">1</span>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       PAGE 2: ARCHITECTURE DIAGRAM, FEATURE TENSORS, DIFFUSION MODES
+       ===================================================================== -->
+  <section class="magazine-sheet">
+    <div>
+      <div class="masthead">
+        <span class="masthead-dept">System Architecture</span>
+        <span>Thinking Cells Frozen and in Motion</span>
+      </div>
+
+      <!-- Full-Width Architectural Diagram -->
+      <div class="figure-full">
+        <svg viewBox="0 0 920 158" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; border:1px solid #e0e0e0;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#111318"/>
+            </marker>
+          </defs>
+          <!-- Tier 1 -->
+          <rect x="14" y="14" width="195" height="128" fill="#f6f5f1" stroke="#111318" stroke-width="1.5"/>
+          <rect x="14" y="14" width="195" height="21" fill="#111318"/>
+          <text x="22" y="28" fill="#ffffff" font-family="IBM Plex Sans, sans-serif" font-size="8.8" font-weight="700">TIER 1: CORPUS PACKAGING</text>
+          <text x="24" y="50" fill="#111318" font-family="IBM Plex Mono, monospace" font-size="8">museum_corpus_data.js</text>
+          <text x="24" y="67" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 25 MIT Museum Photographs</text>
+          <text x="24" y="83" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 384&times;384 Lanczos Square Crop</text>
+          <text x="24" y="99" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; Base64 Data URI Bundle (1.09 MB)</text>
+          <text x="24" y="115" fill="#b82914" font-family="IBM Plex Mono, monospace" font-size="7.6">&bull; Offline Kiosk Compatibility</text>
+
+          <line x1="209" y1="78" x2="238" y2="78" stroke="#111318" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- Tier 2 -->
+          <rect x="240" y="14" width="210" height="128" fill="#f6f5f1" stroke="#111318" stroke-width="1.5"/>
+          <rect x="240" y="14" width="210" height="21" fill="#111318"/>
+          <text x="248" y="28" fill="#ffffff" font-family="IBM Plex Sans, sans-serif" font-size="8.8" font-weight="700">TIER 2: FEATURE TENSORS</text>
+          <text x="250" y="50" fill="#111318" font-family="IBM Plex Mono, monospace" font-size="8">computeSpecimenTensors()</text>
+          <text x="250" y="67" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; Affine Luminance L(x,y)</text>
+          <text x="250" y="83" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 3&times;3 Sobel Gradient Field</text>
+          <text x="250" y="99" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 5&times;5 Strided High-Pass Filter</text>
+          <text x="250" y="115" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; Atkinson 1/8 Error Diffusion</text>
+
+          <line x1="450" y1="78" x2="479" y2="78" stroke="#111318" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- Tier 3 -->
+          <rect x="481" y="14" width="215" height="128" fill="#f6f5f1" stroke="#111318" stroke-width="1.5"/>
+          <rect x="481" y="14" width="215" height="21" fill="#b82914"/>
+          <text x="489" y="28" fill="#ffffff" font-family="IBM Plex Sans, sans-serif" font-size="8.8" font-weight="700">TIER 3: DIFFUSION AND FILTERS</text>
+          <text x="491" y="50" fill="#111318" font-family="IBM Plex Mono, monospace" font-size="8">ONNX WebGL and Cellular Loop</text>
+          <text x="491" y="67" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 64&times;64 Edge-Guided ONNX U-Net</text>
+          <text x="491" y="83" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; Multi-Scale Block Etch Kernel</text>
+          <text x="491" y="99" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; Anisotropic Gray-Scott Solver</text>
+          <text x="491" y="115" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; Isophote Curl-Noise Advection</text>
+
+          <line x1="696" y1="78" x2="725" y2="78" stroke="#111318" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- Tier 4 -->
+          <rect x="727" y="14" width="179" height="128" fill="#f6f5f1" stroke="#111318" stroke-width="1.5"/>
+          <rect x="727" y="14" width="179" height="21" fill="#111318"/>
+          <text x="735" y="28" fill="#ffffff" font-family="IBM Plex Sans, sans-serif" font-size="8.8" font-weight="700">TIER 4: CHOREOGRAPHY</text>
+          <text x="737" y="50" fill="#111318" font-family="IBM Plex Mono, monospace" font-size="8">masterAnimationLoop()</text>
+          <text x="737" y="67" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 2D Partner Orbital Waltzes</text>
+          <text x="737" y="83" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 3-Cell Triad Carousels</text>
+          <text x="737" y="99" fill="#525866" font-family="IBM Plex Sans, sans-serif" font-size="8">&bull; 2&times;2 Quartet Pinwheels</text>
+          <text x="737" y="115" fill="#b82914" font-family="IBM Plex Mono, monospace" font-size="7.6">&bull; 60 Hz CSS3 GPU Composite</text>
+        </svg>
+        <div class="caption">
+          <strong>Figure 3.</strong> Four-tier client architecture. Base64 data URI packaging avoids local file cross-origin restrictions during offline kiosk playback, feeding precomputed $160\times 160$ structural tensors into cellular shaders and batched WebGL diffusion.
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Left Column -->
+        <div class="col">
+          <h2 class="sec-head"><span class="sec-num">02</span>System Architecture</h2>
+
+          <h3 class="sub-head">2.1 Offline Corpus Packaging</h3>
+          <p>
+            When a web application is served over HTTP, standard image tags load cleanly into HTML5 canvases. However, museum gallery kiosks and archival review bundles are frequently launched directly from local storage via the <code>file://</code> protocol, where browsers assign each relative image file an opaque origin and block <code>getImageData()</code> reads.
+          </p>
+          <p>
+            To support zero-configuration offline execution alongside standard web hosting, a Python preprocessing script center-crops each photograph to $384\times 384$ pixels with a Lanczos filter and serializes the corpus into <code>museum_corpus_data.js</code>. While base64 encoding increases the bundle size by roughly thirty-three percent to 1.09 MB, data URIs inherit the document security context and allow synchronous pixel ingestion in $47.1\text{ ms}$ across all twenty-five cells.
+          </p>
+
+          <h3 class="sub-head">2.2 Structural Feature Tensors</h3>
+          <p>
+            At startup, each cell downsamples its image into a $160\times 160$ working buffer ($N = 25,600$ pixels) and computes four structural fields:
+          </p>
+          <p>
+            <strong>1. Affine-Normalized Luminance:</strong> Perceptual luminance $L_0 = (0.299R + 0.587G + 0.114B)/255$ is normalized across each specimen's dynamic range $[L_{\min}, L_{\max}]$:
+          </p>
+          <div class="eq-block">
+            $$L(x,y) = \text{clamp}\!\left(\frac{L_0(x,y) - L_{\min}}{\max(0.15,\, L_{\max} - L_{\min})},\, 0,\, 1\right)$$
+          </div>
+          <p>
+            <strong>2. Sobel Gradient Field:</strong> Convolving $L(x,y)$ with $3\times 3$ Sobel kernels yields horizontal and vertical derivatives $(G_x, G_y)$ and clamped edge magnitude:
+          </p>
+          <div class="eq-block">
+            $$E(x,y) = \min\!\left(1.0,\, 1.45\sqrt{G_x(x,y)^2 + G_y(x,y)^2}\right)$$
+          </div>
+          <p>
+            <strong>3. High-Pass Engraving Plate:</strong> Subtracting the $5\times 5$ strided local mean luminance $\bar{L}_5(x,y)$ isolates surface relief regardless of uneven vitrine lighting:
+          </p>
+          <div class="eq-block">
+            $$H(x,y) = \text{clamp}(0.28 + 2.4(L - \bar{L}_5) + 0.85\,E,\, 0,\, 1)$$
+          </div>
+          <p>
+            Quantizing $H(x,y)$ at threshold $0.48$ via Atkinson error diffusion propagates one-eighth of the residual error to six neighboring pixels, preserving crisp midtone stippling across dark backgrounds.
+          </p>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col">
+          <h3 class="sub-head">2.3 Diffusion Workbench and Cellular Modes</h3>
+          <p>
+            Selecting any cell opens the interactive workbench, which runs Ollin Boer Bohan's <em>Dino Diffusion</em> U-Net [6] adapted from Golan Levin's p5.js implementation [7]. Conditioned on noisy latents $x_t$, scalar noise level $\sigma_t$, low-resolution parent pixels, normalized spatial coordinates, and a $64\times 64$ guidance map, the network predicts a denoised patch $\hat{x}_0$ following a rational schedule with shape constant $\kappa = 0.2$ over normalized step progress $u \in [0, 1]$:
+          </p>
+          <div class="eq-block">
+            $$\sigma(u) = \frac{(1 - u)(1 + \kappa)}{(1 - u) + \kappa}$$
+            $$x_{t+1} = \frac{\sigma_{\text{out}}}{\sigma_{\text{in}}} x_t + \left(1 - \frac{\sigma_{\text{out}}}{\sigma_{\text{in}}}\right)\hat{x}_0$$
+          </div>
+          <p>
+            Three modifications adapt this pipeline for responsive curatorial exploration:
+          </p>
+          <ol>
+            <li><strong>Silhouette Conditioning:</strong> Rather than passing raw grayscale photographs that yield muddy latents, the workbench extracts a binary $64\times 64$ contour map combining Sobel edges and deep shadows.</li>
+            <li><strong>Frame-Batched Inference:</strong> Replacing timer-throttled callbacks (<code>setTimeout</code> at $8\text{ ms}$) with three WebGL inference steps per animation frame reduces base $64\times 64$ synthesis latency from $380\text{ ms}$ to $118\text{ ms}$ while streaming intermediate latents live.</li>
+            <li><strong>Coupled Cellular Shaders:</strong> In the main grid, a $60\text{ Hz}$ loop drives four selectable modes blended with the original photograph by intensity $\alpha \in [0.15, 1.0]$:
+              <ul>
+                <li><em>Etch:</em> Coarse-to-fine block sampling ($b \in \{8, 4, 2, 1\}$) converges onto the Atkinson plate and Sobel contours.</li>
+                <li><em>Reaction:</em> An anisotropic Gray-Scott solver [3] with diffusion rates $(D_u, D_v) = (0.18, 0.09)$, kill rate $k = 0.061$, and edge-modulated feed rate $f(x,y) = 0.038 + 0.018\,E(x,y)$:
+                  <div class="eq-block">
+                    $$\partial_t U = D_u \nabla^2 U - UV^2 + f(x,y)(1-U)$$
+                    $$\partial_t V = D_v \nabla^2 V + UV^2 - (f(x,y) + k)V$$
+                  </div>
+                </li>
+                <li><em>Flow:</em> Advection along incompressible isophote velocity vectors $\vec{v} = (-G_y, G_x)$ [4].</li>
+                <li><em>Halftone:</em> Bi-directional cross-hatching modulated by $L(x,y)$.</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>WORKING MANUSCRIPT</span>
+      <span>SYSTEM ARCHITECTURE</span>
+      <span class="page-num">2</span>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       PAGE 3: KINETIC CHOREOGRAPHY, BLUEPRINT, BENCHMARKS, REFERENCES
+       ===================================================================== -->
+  <section class="magazine-sheet">
+    <div>
+      <div class="masthead">
+        <span class="masthead-dept">Choreography and Evaluation</span>
+        <span>Thinking Cells Frozen and in Motion</span>
+      </div>
+
+      <div class="two-col">
+        <!-- Left Column -->
+        <div class="col">
+          <h3 class="sub-head">2.4 Planar Orbital Choreography</h3>
+          <p>
+            To place specimens in shifting visual dialogue without triggering browser layout reflows, all twenty-five cards use absolute coordinates and GPU-composited <code>translate3d</code> transforms. A permutation array maps grid slots to cell indices and schedules non-overlapping cycles of length $m \in \{2, 3, 4\}$.
+          </p>
+          <p>
+            During a swap from $\vec{p}_{\text{from}}$ to $\vec{p}_{\text{to}}$ with displacement $\Delta\vec{p} = (\Delta x, \Delta y)$ and cubic easing $s(u) \in [0, 1]$, each card deflects along the unnormalized perpendicular normal $\vec{n}_\perp = (-\Delta y, \Delta x)$ scaled by lateral factor $\gamma \in [0.28, 0.42]$:
+          </p>
+          <div class="eq-block">
+            $$\vec{p}(u) = \vec{p}_{\text{from}} + s(u)\,\Delta\vec{p} + \gamma \sin(\pi s(u))\,\vec{n}_\perp$$
+          </div>
+          <p>
+            Because $\vec{n}_\perp$ scales with $\|\Delta\vec{p}\|$, partner tiles automatically bow outward by $2\gamma\|\Delta\vec{p}\|$ at their midpoint ($s = 0.5$), preventing overlap within an active pair while elevating via scale factor $1 + 0.065\sin(\pi u)$.
+          </p>
+
+          <h2 class="sec-head"><span class="sec-num">03</span>Implementation Blueprint</h2>
+          <p>
+            Listings 1 and 2 provide the standalone corpus encoder and the per-frame orbital kinematics update routine.
+          </p>
+
+          <div class="code-header">
+            <span>Listing 1. Python Corpus Encoder</span>
+            <span>build_corpus.py</span>
+          </div>
+          <pre class="code-box"><code>import io, json, base64
+from PIL import Image, ImageOps
+
+corpus = {}
+for name in specimen_files:
+    with Image.open(f"assets/{name}") as im:
+        rgb = im.convert("RGB")
+        sq = ImageOps.fit(
+            rgb, (384, 384), Image.Resampling.LANCZOS
+        )
+        buf = io.BytesIO()
+        sq.save(buf, format="JPEG", quality=86)
+        b64 = base64.b64encode(buf.getvalue())
+        uri = "data:image/jpeg;base64," + b64.decode()
+        corpus[f"assets/{name}"] = uri
+
+with open("assets/museum_corpus_data.js", "w") as f:
+    body = json.dumps(corpus)
+    f.write(f"window.MUSEUM_IMAGE_DATA = {body};\n")</code></pre>
+
+          <div class="code-header">
+            <span>Listing 2. Planar Orbital Kinematics</span>
+            <span>choreography.js</span>
+          </div>
+          <pre class="code-box"><code>function updateCellKinematics(cell) {
+  if (cell.isSwapping) {
+    const nextP = cell.swapProgress + cell.swapSpeed;
+    const p = Math.min(1, nextP);
+    cell.swapProgress = p;
+    const s = p < 0.5
+      ? 4 * p * p * p
+      : 1 - Math.pow(-2 * p + 2, 3) / 2;
+    const dx = cell.toX - cell.fromX;
+    const dy = cell.toY - cell.fromY;
+    const arc = Math.sin(Math.PI * s) * cell.arcSign;
+    cell.x = cell.fromX + dx * s - dy * arc;
+    cell.y = cell.fromY + dy * s + dx * arc;
+    if (p === 1) cell.isSwapping = false;
+  }
+  const w = Math.sin(Math.PI * cell.swapProgress);
+  const lift = cell.isSwapping ? 1 + 0.065 * w : 1;
+  const xPx = cell.x.toFixed(1);
+  const yPx = cell.y.toFixed(1);
+  cell.card.style.transform =
+    `translate3d(${xPx}px, ${yPx}px, 0) scale(${lift})`;
+}</code></pre>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col">
+          <table class="mag-table">
+            <thead>
+              <tr>
+                <th style="width: 42%;">Subsystem</th>
+                <th style="width: 28%;">Resolution</th>
+                <th style="width: 30%;">Median Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Feature Ingestion</td>
+                <td>160&times;160 &times; 25</td>
+                <td>45.10 ms (once)</td>
+              </tr>
+              <tr>
+                <td>Multi-Scale Etch</td>
+                <td>160&times;160 / cell</td>
+                <td>0.60 ms / cell</td>
+              </tr>
+              <tr>
+                <td>Gray-Scott Solver</td>
+                <td>160&times;160 / cell</td>
+                <td>0.70 ms / cell</td>
+              </tr>
+              <tr>
+                <td>Curl-Noise Flow</td>
+                <td>160&times;160 / cell</td>
+                <td>1.40 ms / cell</td>
+              </tr>
+              <tr>
+                <td>ONNX WASM Step</td>
+                <td>64&times;64 patch</td>
+                <td>58.90 ms / step</td>
+              </tr>
+              <tr>
+                <td>Orbital Kinematics</td>
+                <td>25 DOM Nodes</td>
+                <td>&lt; 0.01 ms / frame</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="caption">
+            <strong>Table 1.</strong> Measured execution medians in Google Chrome 156 on Apple Silicon (M1 Pro) using <code>performance.now()</code> across 25 authentic museum specimens.
+          </div>
+
+          <h2 class="sec-head"><span class="sec-num">04</span>Discussion and Extensions</h2>
+          <p>
+            <strong>Curatorial Legibility versus Visual Intensity:</strong> High filter mix values ($\alpha > 0.85$) foreground morphological texture at the expense of fine archival inscriptions. Our staged lifecycle addresses this tension by holding the diffused state for three seconds before smoothly interpolating $\alpha \to 0$, returning each cell to its unretouched photograph. Future deployments should pair this system with formal visitor studies and curator interviews to evaluate dwell time and object discovery against static catalog baselines.
+          </p>
+          <p>
+            <strong>WebGPU Compute and Institutional Distillation:</strong> Porting the Gray-Scott and curl-noise kernels to WebGPU compute shaders will remove CPU-to-canvas upload overhead across larger collection matrices. In parallel, distilling compact eight megabyte ONNX U-Net weights directly on MIT Museum subsets, such as Hart Nautical ship plans or Edgerton strobe sequences, will allow visitors to switch between botanical, naval, and oscillographic priors.
+          </p>
+
+          <div class="sidebar-box">
+            <div class="sidebar-title">Image Credits and Artifact Availability</div>
+            <p style="font-size: 7.1pt; line-height: 1.28; margin-bottom: 3px;">
+              Archival and exhibition photographs courtesy of the MIT Museum (Harold E. Edgerton Collection, Hart Nautical Collection, and MIT Museum Galleries, <code>mitmuseum.mit.edu</code>), used for non-commercial academic research.
+            </p>
+            <ul style="font-size: 7.1pt;">
+              <li>Interactive gallery: <code>thinking_machines_stream.html</code></li>
+              <li>Corpus module: <code>assets/museum_corpus_data.js</code></li>
+              <li>Botanical U-Net: <code>assets/network.onnx</code></li>
+            </ul>
+          </div>
+
+          <h2 class="sec-head"><span class="sec-num">05</span>References</h2>
+          <p style="font-size: 6.75pt; line-height: 1.25; color: var(--ink-muted); text-align: left;">
+            1. M. Whitelaw, "Generous Interfaces for Digital Cultural Collections," <em>Digital Humanities Quarterly</em>, vol. 9, no. 1, 2015.<br>
+            2. A. M. Turing, "The Chemical Basis of Morphogenesis," <em>Phil. Trans. Royal Society B</em>, vol. 237, no. 641, pp. 37-72, 1952.<br>
+            3. J. E. Pearson, "Complex Patterns in a Simple System," <em>Science</em>, vol. 261, no. 5118, pp. 189-192, 1993.<br>
+            4. R. Bridson, J. Hourihan, and M. Nordenstam, "Curl-Noise for Procedural Fluid Flow," <em>ACM Trans. Graphics</em>, vol. 26, no. 3, art. 46, 2007.<br>
+            5. J. Ho, A. Jain, and P. Abbeel, "Denoising Diffusion Probabilistic Models," <em>NeurIPS</em>, vol. 33, pp. 6840-6851, 2020.<br>
+            6. O. B. Bohan, "Dino Diffusion: Bare-Bones Diffusion Models," web article, 2024, https://madebyoll.in/posts/dino_diffusion/.<br>
+            7. G. Levin, "Dino Diffusion in p5.js with ONNX Runtime Web," open-source software sketch, 2025, https://golanlevin.github.io/misc/dino-diffusion/.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>WORKING MANUSCRIPT</span>
+      <span>CHOREOGRAPHY AND EVALUATION</span>
+      <span class="page-num">3</span>
+    </div>
+  </section>
+
+</body>
+</html>

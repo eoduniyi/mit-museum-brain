@@ -1,0 +1,88 @@
+// =============================================================================
+// BRAIN // LIQUID SYNAPSE: CONTINUOUS NEURAL DYNAMICS & TACTILE BIO-SYNTHESIS
+// MIT Museum Programmatic Open Call — Fall 2026 Submission / 2027 Season
+// Erick Oduniyi | MIT Media Lab (Viral Communications Group)
+// =============================================================================
+
+LiquidSynapse()
+    Initialize state_space(manifold: continuous, dimension: D)
+    Set time_constants: tau ~ log_normal(mu, sigma)
+    Patch physical_console(rotary_encoders, patchbay_cv, faders)
+    
+    While(alive: cognitive_organism)
+        // continuous neural state evolution (Liquid Time-Constant ODE)
+        dx/dt = -(x - equilibrium) / tau(input_signal) + W_rec * tanh(x) + W_in * I(t)
+        
+        // sensory & physiological coupling
+        I(t) = couple({
+            eeg_rhythms: alpha_theta_ratio(t),
+            saccades: ocular_dynamics(t),
+            biotactile: participant_impedance(t),
+            environmental_entropy: museum_ambient_sound(t)
+        })
+        
+        // tactile hardware patchbay modulation
+        modulations = patchbay.route(source: state_space, sink: {
+            oscillators: audio_engine(vst_rack),
+            phase_portraits: visual_matrix(swiss_grid),
+            haptic_actuators: participant_feedback()
+        })
+        
+        // acoustic & visual projection
+        acoustics = synthesize(modulations.oscillators, resonance: organic)
+        optics    = render(modulations.phase_portraits, mode: constructivist)
+        
+        yield (acoustics, optics)
+
+Mind()
+    Is not a discrete lookup table.
+    Is not static weights frozen in silicone.
+    The mind is a continuous fluid, unfolding in time.
+
+Synthesizer()
+    Control voltage is synaptic current.
+    Patch cables are axonal projections.
+    Resonance is cognitive attention.
+    Oscillation is consciousness.
+
+Orchestration = LiquidSynapse()
+Experience = Orchestration.listen_and_see()
+
+
+// =============================================================================
+// MIT MUSEUM BRAIN PROGRAMMATIC OPEN CALL: APPLICATION METADATA & FIELD ARCHIVE
+// =============================================================================
+
+Project Title: 
+LIQUID SYNAPSE: BIO-MODULAR SYNTHESIZERS FOR CONTINUOUS NEURAL DYNAMICS
+
+Primary Lead / Applicant: 
+Erick Oduniyi (MIT Media Lab Alumnus & Researcher, Viral Communications Group)
+
+Program Format: 
+Two-Part Public Experience:
+Part 1: Hands-On Public Masterclass & Instrument Workshop (MIT Museum Maker Hub)
+Part 2: Live Algorithmic Concert & Keynote Demonstration (Lee Family Exchange Atrium)
+
+Thematic Alignment:
+BRAIN — Neurotechnology, Continuous-Time Neural Systems ("Liquid Learning"), 
+Cybernetics, Cognitive Interfaces & Tactile Hardware Emulation.
+
+Target Season: 
+April – September 2027 (Opening Season of BRAIN at MIT Museum)
+Submission Deadline: November 1, 2026
+
+Short Concept Summary (100 Words):
+"Liquid Synapse" transforms the abstract inner workings of the human brain into an 
+interactive, tactile modular synthesizer and live audiovisual performance. Drawing from 
+research in continuous-time "Liquid Neural Networks" and tactile hardware interface design, 
+this two-part program allows museum visitors to physically sculpt cognitive state-spaces. 
+In a hands-on workshop, participants patch virtual and physical control voltages to modulate 
+neural ordinary differential equations (ODEs), turning EEG rhythms and attention dynamics into 
+resonant acoustic timbres. In an evening performance in the Lee Exchange, these bio-modular 
+instruments drive a massive continuous audiovisual projection on the two-story screen.
+
+Key Questions Explored:
+1. What does neural computation feel and sound like when freed from discrete tokens?
+2. How can tangible hardware interfaces demystify brain-computer interfacing (BCI) for the public?
+3. How do continuous dynamical systems bridge biological cognition and artificial intelligence?

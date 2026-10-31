@@ -1,0 +1,93 @@
+\documentclass[journal,compsoc]{IEEEtran}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{vermilion}{RGB}{184,41,20}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  frame=single,
+  numbers=none
+}
+
+\begin{document}
+
+\title{Thinking Cells Frozen and in Motion}
+
+\author{Erick~Oduniyi%
+\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem E. Oduniyi works in design and computation.}%
+\thanks{Working Manuscript (Curatorial Computation).}}
+
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+Digital museum catalogs typically present holdings as static thumbnail tables or isolated three-dimensional meshes that strip objects of relational context. We introduce \emph{Thinking Cells Frozen and in Motion}, a client-side web installation developed with twenty-five photographs from the MIT Museum collection. The title reflects a dual ontological state: each specimen remains \emph{frozen} as an archival photographic record while simultaneously entering \emph{motion} through morphological shaders, an edge-conditioned ONNX diffusion network, and two-dimensional orbital swaps. By conditioning a compact U-Net trained on nineteenth-century botanical illustrations with the contours of naval half-hulls, strobe photographs, and laboratory logs, the interface stages a deliberate visual dialogue between biological growth and engineered instruments.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Generative Museology, Client-Side Diffusion, ONNX Runtime Web, Reaction-Diffusion, Non-Photorealistic Rendering, Kinetic Choreography, MIT Museum.
+\end{IEEEkeywords}}
+
+\maketitle
+\IEEEdisplaynontitleabstractindextext
+\IEEEpeerreviewmaketitle
+
+\IEEEraisesectionheading{\section{Design Principles}\label{sec:principles}}
+\IEEEPARstart{M}{useums} of science and technology steward artifacts that capture physical processes frozen at a decisive instant, whether a microsecond strobe flash by Harold Edgerton, annual timber rings in a cypress core, or cursive calculations in a laboratory notebook. When institutions publish these holdings online, standard search grids isolate each record in a static cell, whereas three-dimensional scanners favor metallic hardware over textiles, paper, and biological media.
+
+Building on Whitelaw's concept of generous interfaces~\cite{whitelaw2015}, we ask how a flat collection grid behaves when every tile operates as a coupled visual cell. Rather than synthesizing ungrounded imagery from text prompts, our system anchors every operation in verified collection photographs. Each archival image defines the spatial boundary conditions for local reaction-diffusion waves~\cite{turing1952,pearson1993}, curl-noise advection~\cite{bridson2007}, and a client-side denoising diffusion model~\cite{ho2020,bohan2024,levin2025}.
+
+Crucially, the interactive workbench pairs MIT Museum artifacts with an eight megabyte U-Net trained exclusively on historic botanical drawings~\cite{bohan2024}. When conditioned on the binary Sobel silhouette of a carved pine hull or an interferometer image, the network hallucinates organic stippling and foliate veins across engineered forms. This cross-domain mismatch is intentional: it surfaces structural homologies between natural morphogenesis and scientific instrumentation while periodically dissolving back to the unretouched archival photograph so curatorial legibility is preserved.
+
+\section{System Architecture}
+
+\subsection{Offline Corpus Packaging}
+When a web application is served over HTTP, standard image tags load cleanly into HTML5 canvases. However, museum gallery kiosks and archival review bundles are frequently launched directly from local storage via the \texttt{file://} protocol, where browsers assign each relative image file an opaque origin and block \texttt{getImageData()} reads.
+
+To support zero-configuration offline execution alongside standard web hosting, a Python preprocessing script center-crops each photograph to $384\times 384$ pixels with a Lanczos filter and serializes the corpus into \texttt{museum\_corpus\_data.js}. While base64 encoding increases the bundle size by roughly thirty-three percent to 1.09~MB, data URIs inherit the document security context and allow synchronous pixel ingestion in $47.1\text{ ms}$ across all twenty-five cells.
+
+\subsection{Structural Feature Tensors}
+At startup, each cell downsamples its image into a $160\times 160$ working buffer ($N = 25{,}600$ pixels) and computes affine-normalized luminance $L(x,y)$, Sobel gradient magnitude $E(x,y) = \min(1.0, 1.45\sqrt{G_x^2 + G_y^2})$, and a high-pass contrast plate subtracting the $5\times 5$ strided local mean $\bar{L}_5(x,y)$:
+\begin{equation}
+H(x,y) = \text{clamp}\!\left(0.28 + 2.4(L(x,y) - \bar{L}_5(x,y)) + 0.85\,E(x,y),\, 0,\, 1\right)
+\end{equation}
+Quantizing $H(x,y)$ at threshold $0.48$ via Atkinson error diffusion propagates one-eighth of the residual error to six neighboring pixels, preserving crisp midtone stippling across dark backgrounds.
+
+\subsection{Diffusion Workbench and Cellular Modes}
+Selecting any cell opens the interactive workbench, which runs Bohan's \emph{Dino Diffusion} U-Net~\cite{bohan2024} adapted from Levin's p5.js implementation~\cite{levin2025}. Conditioned on noisy latents $x_t$, scalar noise level $\sigma_t$, low-resolution parent pixels, normalized spatial coordinates, and a $64\times 64$ guidance map, the network predicts a denoised patch $\hat{x}_0$ following a rational schedule with shape constant $\kappa = 0.2$ over normalized step progress $u \in [0, 1]$:
+\begin{equation}
+\sigma(u) = \frac{(1 - u)(1 + \kappa)}{(1 - u) + \kappa}, \quad x_{t+1} = \frac{\sigma_{\text{out}}}{\sigma_{\text{in}}} x_t + \left(1 - \frac{\sigma_{\text{out}}}{\sigma_{\text{in}}}\right)\hat{x}_0
+\end{equation}
+In the main grid, a $60\text{ Hz}$ loop drives four selectable modes blended with the original photograph by intensity $\alpha \in [0.15, 1.0]$, including an anisotropic Gray-Scott solver~\cite{pearson1993} with $(D_u, D_v) = (0.18, 0.09)$, kill rate $k = 0.061$, and edge-modulated feed rate $f(x,y) = 0.038 + 0.018\,E(x,y)$:
+\begin{align}
+\partial_t U &= D_u \nabla^2 U - UV^2 + f(x,y)(1-U) \\
+\partial_t V &= D_v \nabla^2 V + UV^2 - (f(x,y) + k)V
+\end{align}
+
+\subsection{Planar Orbital Choreography}
+During a swap from $\vec{p}_{\text{from}}$ to $\vec{p}_{\text{to}}$ with displacement $\Delta\vec{p} = (\Delta x, \Delta y)$ and cubic easing $s(u) \in [0, 1]$, each card deflects along the unnormalized perpendicular normal $\vec{n}_\perp = (-\Delta y, \Delta x)$ scaled by lateral factor $\gamma \in [0.28, 0.42]$:
+\begin{equation}
+\vec{p}(u) = \vec{p}_{\text{from}} + s(u)\,\Delta\vec{p} + \gamma \sin(\pi s(u))\,\vec{n}_\perp
+\end{equation}
+
+\section{Performance Evaluation and Discussion}
+Measured directly in Google Chrome 156 on Apple Silicon (M1 Pro) via \texttt{performance.now()} across 25 authentic museum specimens, one-time feature ingestion takes $45.10\text{ ms}$, per-cell multi-scale etch takes $0.60\text{ ms}$, Gray-Scott updates take $0.70\text{ ms}$, curl-noise flow takes $1.40\text{ ms}$, ONNX WASM patch inference takes $58.90\text{ ms/step}$, and 25-node orbital kinematics take $< 0.01\text{ ms/frame}$.
+
+\section*{Acknowledgments and Image Credits}
+Archival and exhibition photographs courtesy of the MIT Museum (Harold E. Edgerton Collection, Hart Nautical Collection, and MIT Museum Galleries, \texttt{mitmuseum.mit.edu}), used for non-commercial academic research.
+
+\begin{thebibliography}{7}
+\bibitem{whitelaw2015} M. Whitelaw, ``Generous Interfaces for Digital Cultural Collections,'' \emph{Digital Humanities Quarterly}, vol. 9, no. 1, 2015.
+\bibitem{turing1952} A. M. Turing, ``The Chemical Basis of Morphogenesis,'' \emph{Phil. Trans. Royal Society B}, vol. 237, no. 641, pp. 37--72, 1952.
+\bibitem{pearson1993} J. E. Pearson, ``Complex Patterns in a Simple System,'' \emph{Science}, vol. 261, no. 5118, pp. 189--192, 1993.
+\bibitem{bridson2007} R. Bridson, J. Hourihan, and M. Nordenstam, ``Curl-Noise for Procedural Fluid Flow,'' \emph{ACM Trans. Graphics}, vol. 26, no. 3, art. 46, 2007.
+\bibitem{ho2020} J. Ho, A. Jain, and P. Abbeel, ``Denoising Diffusion Probabilistic Models,'' \emph{NeurIPS}, vol. 33, pp. 6840--6851, 2020.
+\bibitem{bohan2024} O. B. Bohan, ``Dino Diffusion: Bare-Bones Diffusion Models,'' web article, 2024, \url{https://madebyoll.in/posts/dino_diffusion/}.
+\bibitem{levin2025} G. Levin, ``Dino Diffusion in p5.js with ONNX Runtime Web,'' open-source software sketch, 2025, \url{https://golanlevin.github.io/misc/dino-diffusion/}.
+\end{thebibliography}
+
+\end{document}
