@@ -1,5 +1,5 @@
 # mit-museum-brain
-### Thinking Cells Frozen and In motion
+### Thinking Cells Frozen and In Motion
 
 [![firebase hosting](https://img.shields.io/badge/firebase-hosting-orange.svg)](https://letters-mit-museum-brain.web.app)
 [![onnx webgl](https://img.shields.io/badge/onnx-runtime--web-blue.svg)](https://onnxruntime.ai/)
@@ -14,9 +14,9 @@ Developed for the **brain digital content open call** and **brain programmatic o
 ## Vision
 
 While a physical museum exhibition does not inherently require a web application, an untainted, browser-based deployment represents the most portable, zero-configuration medium to:
-1. **present the core ideas to curators, jurors, and visitors** with instantaneous live execution across kiosks, tablets, and desktop workstations.
-2. **democratize computational curatorial tools**, allowing individuals and peer cultural institutions to ingest, filter, and choreograph their own historical archives.
-3. **bridge frozen historical artifacts with continuous neural computation**, reimagining static vitrine specimens as active participants in generative cellular dynamics.
+1. **Present the core ideas to curators, jurors, and visitors** with instantaneous live execution across kiosks, tablets, and desktop workstations.
+2. **Democratize computational curatorial tools**, allowing individuals and peer cultural institutions to ingest, filter, and choreograph their own historical archives.
+3. **Bridge "frozen" historical artifacts with continuous neural computation**, reimagining static vitrine specimens as active participants in generative cellular dynamics.
 
 ---
 
@@ -180,15 +180,15 @@ The 25 featured artifacts span cybernetics, robotics, computing history, scienti
    detailed technical manuscript detailing the 4-tier system architecture, benchmarks, and gallery installation designs.  
    located at [`research/papers/thinking-cells-cga/thinking_machines_ieee_cga_paper.pdf`](research/papers/thinking-cells-cga/thinking_machines_ieee_cga_paper.pdf).
 
----
+---P
 
 ## Extending
 
-Institutions and researchers can adapt the pipeline to new collections by running the python preprocessing script:
+Organizations and researchers can adapt the pipeline to new collections by running the python preprocessing script:
 ```bash
 python3 scripts/preprocess_collection.py --input /path/to/raw_photos/ --output public/assets/
 ```
-the script resamples images to $384\times 384$ lanczos squares and compiles `museum_corpus_data.js`, enabling instant drag-and-drop replacement of the exhibition corpus.
+The script resamples images to $384\times 384$ lanczos squares and compiles `museum_corpus_data.js`, enabling instant drag-and-drop replacement of the exhibition corpus.
 
 ---
 
