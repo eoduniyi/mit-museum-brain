@@ -1,5 +1,5 @@
 # mit-museum-brain
-### Thinking Cells Frozen and In Motion
+### Thinking Cells Frozen and in Motion
 
 [![firebase hosting](https://img.shields.io/badge/firebase-hosting-orange.svg)](https://letters-mit-museum-brain.web.app)
 [![onnx webgl](https://img.shields.io/badge/onnx-runtime--web-blue.svg)](https://onnxruntime.ai/)
@@ -49,7 +49,7 @@ Each specimen cell precomputes four structural fields:
 - **high-pass engraving plate**: strided local mean subtraction $\bar{L}_5(x,y)$ combined with atkinson error diffusion for crisp stippling under uneven museum vitrine lighting.
 
 ### 3. tier 3: diffusion workbench & cellular shaders
-- **Edge-guided dino diffusion**: runs ollin boer bohan's *dino diffusion* u-net via onnx runtime web (webgl), conditioned on $64\times 64$ sobel silhouette guidance.
+- **edge-guided dino diffusion**: runs ollin boer bohan's *dino diffusion* u-net via onnx runtime web (webgl), conditioned on $64\times 64$ sobel silhouette guidance.
 - **four real-time cellular modes**:
   - `etch`: coarse-to-fine block sampling converging onto the atkinson plate.
   - `reaction`: anisotropic gray-scott reaction-diffusion solver modulated by object edge maps.
