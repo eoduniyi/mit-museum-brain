@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mit museum / thinking cells frozen and in motion</title>
+  <style>
+    :root {
+      /* light mode clinical gallery (default) */
+      --bg: #f5f4f0;
+      --header-bg: rgba(245, 244, 240, 0.92);
+      --card-bg: #ffffff;
+      --border: rgba(15, 18, 24, 0.12);
+      --border-focus: #111318;
+      --text: #111318;
+      --text-muted: #6e737d;
+      --pill-active-bg: #111318;
+      --pill-active-text: #ffffff;
+      --badge-bg: rgba(255, 255, 255, 0.88);
+      --badge-text: #111318;
+      --shadow-hover: 0 12px 32px rgba(15, 18, 24, 0.16);
+      --shadow-dance: 0 16px 38px rgba(15, 18, 24, 0.22);
+      --modal-backdrop: rgba(245, 244, 240, 0.94);
+      --modal-card: #ffffff;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+    }
+
+    body.dark-mode {
+      --bg: #090a0d;
+      --header-bg: rgba(9, 10, 13, 0.94);
+      --card-bg: #111318;
+      --border: rgba(255, 255, 255, 0.1);
+      --border-focus: #ffffff;
+      --text: #e8eaed;
+      --text-muted: #6e7480;
+      --pill-active-bg: #ffffff;
+      --pill-active-text: #090a0d;
+      --badge-bg: rgba(8, 9, 12, 0.72);
+      --badge-text: rgba(255, 255, 255, 0.88);
+      --shadow-hover: 0 10px 28px rgba(0, 0, 0, 0.75);
+      --shadow-dance: 0 18px 42px rgba(0, 0, 0, 0.85);
+      --modal-backdrop: rgba(7, 8, 11, 0.95);
+      --modal-card: #101218;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      text-transform: lowercase;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    /* minimal clinical gallery header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .gallery-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .gallery-title span {
+      color: var(--text-muted);
+    }
+
+    .gallery-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .mode-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(128, 128, 128, 0.05);
+      padding: 2px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .btn-pill {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 4px 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .mode-group .btn-pill {
+      border-color: transparent;
+      padding: 3px 8px;
+      border-radius: 7px;
+    }
+
+    .btn-pill:hover {
+      border-color: var(--border-focus);
+      color: var(--text);
+    }
+
+    .btn-pill.active {
+      border-color: var(--pill-active-bg);
+      color: var(--pill-active-text);
+      background: var(--pill-active-bg);
+      font-weight: 500;
+    }
+
+    .slider-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .slider-control input[type="range"] {
+      width: 56px;
+      height: 2px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .slider-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 9px;
+      height: 9px;
+      background: var(--text);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* 5x5 choreographed stage viewport */
+    main.grid-viewport {
+      position: absolute;
+      top: 50px;
+      bottom: 34px;
+      left: 0;
+      right: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .grid-5x5 {
+      position: relative;
+      width: min(84vh, 84vw);
+      height: min(84vh, 84vw);
+    }
+
+    .cell-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .cell-card:hover {
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow-hover);
+      z-index: 30 !important;
+    }
+
+    .cell-card.dancing {
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow-dance);
+    }
+
+    .cell-card.active-diffusing {
+      border-color: var(--border-focus);
+    }
+
+    .cell-canvas-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      position: relative;
+    }
+
+    .cell-canvas-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cell-canvas-wrapper canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: pixelated;
+      pointer-events: none;
+    }
+
+    .cell-badge {
+      position: absolute;
+      bottom: 5px;
+      left: 6px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--badge-text);
+      background: var(--badge-bg);
+      border: 1px solid var(--border);
+      padding: 1.5px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: calc(100% - 12px);
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.hide-tags .cell-badge {
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+    }
+
+    .cell-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--text);
+      width: 0%;
+      z-index: 5;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    /* minimalist footer */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 34px;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      border-top: 1px solid var(--border);
+      background: var(--header-bg);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    #footer-status {
+      color: var(--text);
+    }
+
+    /* interactive dino diffusion workbench modal */
+    .workbench-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      background: var(--modal-backdrop);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .workbench-modal.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .workbench-card {
+      position: relative;
+      width: 1040px;
+      max-width: 96vw;
+      background: var(--modal-card);
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      border-radius: 18px;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow:
+        0 0 0 1.5px rgba(255, 255, 255, 0.95),
+        0 0 0 4.5px rgba(17, 19, 24, 0.08),
+        0 28px 80px rgba(15, 18, 24, 0.24);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      overflow: hidden;
+    }
+
+    /* subtle physical glass frame & specular highlight on the card modal */
+    .workbench-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1.5px solid rgba(255, 255, 255, 0.75);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.06) 26%, rgba(255, 255, 255, 0) 48%, rgba(255, 255, 255, 0.12) 100%);
+      box-shadow:
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.95),
+        inset 0 -1.5px 2px rgba(0, 0, 0, 0.07);
+      z-index: 20;
+    }
+
+    body.dark-mode .workbench-card {
+      border: 1.5px solid rgba(255, 255, 255, 0.38);
+      box-shadow:
+        0 0 0 1.5px rgba(255, 255, 255, 0.45),
+        0 0 0 4.5px rgba(255, 255, 255, 0.06),
+        0 32px 90px rgba(0, 0, 0, 0.85);
+    }
+
+    body.dark-mode .workbench-card::after {
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.03) 26%, rgba(255, 255, 255, 0) 48%, rgba(255, 255, 255, 0.08) 100%);
+      box-shadow:
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.7),
+        inset 0 -1.5px 2px rgba(0, 0, 0, 0.45);
+    }
+
+    .workbench-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .workbench-title-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .workbench-title {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+
+    .workbench-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .workbench-close {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .workbench-close:hover {
+      color: var(--text);
+      border-color: var(--border-focus);
+    }
+
+    .workbench-canvas-row {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .canvas-panel-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .draw-canvas-box {
+      width: 450px;
+      height: 450px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: crosshair;
+      position: relative;
+    }
+
+    .draw-canvas-box canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .diffuse-canvas-box {
+      width: 450px;
+      height: 450px;
+      background: #f8f7f4;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .diffuse-canvas-box canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .workbench-instructions {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      background: rgba(128, 128, 128, 0.06);
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .workbench-controls-inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kbd {
+      background: rgba(128, 128, 128, 0.14);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--text);
+    }
+  </style>
+
+  <!-- untainted local base64 corpus of the 25 authentic mit museum photographs -->
+  <script src="assets/museum_corpus_data.js"></script>
+  <!-- p5.js and onnx runtime web for dino diffusion -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="gallery-title">
+      mit museum <span>/</span> thinking cells frozen and in motion
+    </div>
+    <div class="gallery-actions">
+      <div class="mode-group" id="filter-mode-group">
+        <button class="btn-pill active" data-mode="dino-etch">etch</button>
+        <button class="btn-pill" data-mode="reaction">reaction</button>
+        <button class="btn-pill" data-mode="flow">flow</button>
+        <button class="btn-pill" data-mode="halftone">halftone</button>
+      </div>
+
+      <div class="slider-control">
+        <span>intensity</span>
+        <input type="range" id="intensity-slider" min="15" max="100" value="90">
+        <span id="intensity-val">90%</span>
+      </div>
+
+      <button id="btn-toggle-dance" class="btn-pill active">dance</button>
+      <button id="btn-shuffle-now" class="btn-pill">swap now</button>
+      <button id="btn-toggle-stream" class="btn-pill active">stream</button>
+      <button id="btn-lock-all" class="btn-pill">hold all</button>
+      <button id="btn-toggle-tags" class="btn-pill active">tags</button>
+      <button id="btn-theme-toggle" class="btn-pill">light</button>
+    </div>
+  </header>
+
+  <main class="grid-viewport">
+    <div class="grid-5x5" id="matrix-grid">
+      <!-- 25 authentic mit museum cells positioned via spring-choreography -->
+    </div>
+  </main>
+
+  <footer>
+    <span id="footer-status">select any object to guide diffusion</span>
+    <span id="model-status">live · 60fps</span>
+  </footer>
+
+  <!-- interactive dino diffusion workbench modal -->
+  <div class="workbench-modal" id="workbench-modal">
+    <div class="workbench-card">
+      <div class="workbench-header">
+        <div class="workbench-title-box">
+          <h2 id="modal-title" class="workbench-title">object</h2>
+          <span id="modal-accession" class="workbench-sub">material</span>
+        </div>
+        <div class="workbench-controls-inline">
+          <div class="slider-control">
+            <span>edges</span>
+            <input type="range" id="edge-thresh-slider" min="10" max="90" value="48">
+          </div>
+          <button id="btn-reset-photo-edge" class="btn-pill">reset</button>
+          <button id="btn-invert-guide" class="btn-pill">invert</button>
+          <button id="modal-close" class="workbench-close">close</button>
+        </div>
+      </div>
+
+      <div class="workbench-canvas-row">
+        <div class="canvas-panel">
+          <div class="canvas-panel-label">
+            <span>input (64×64)</span>
+            <span id="guide-char-badge">contours</span>
+          </div>
+          <div class="draw-canvas-box" id="draw-box">
+            <canvas id="input-canvas" width="64" height="64"></canvas>
+          </div>
+        </div>
+
+        <div class="canvas-panel">
+          <div class="canvas-panel-label">
+            <span>output (512×512)</span>
+            <span id="diffuse-step-badge">ready</span>
+          </div>
+          <div class="diffuse-canvas-box" id="diffuse-box">
+            <canvas id="output-canvas" width="512" height="512"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="workbench-instructions">
+        <span>draw with mouse · type any letter · <span class="kbd">return</span> diffuse · <span class="kbd">space</span> clear</span>
+        <div class="workbench-controls-inline">
+          <button id="btn-run-diffusion" class="btn-pill active">diffuse</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 25 authentic mit museum collection & exhibition photographs
+     */
+    const SPECIMENS = [
+      { id: 0, label: "crochet coral reef", name: "crochet coral reef", year: 2023, char: "c", motif: "hyperbolic fiber textile", img: "assets/crochet_coral_reef_official.jpg", palette: [215, 55, 35] },
+      { id: 1, label: "tree core", name: "dendrochronology tree core", year: 1980, char: "t", motif: "annual growth ring timber", img: "assets/cypress_tree_core_wood.jpg", palette: [145, 95, 45] },
+      { id: 2, label: "half-hull model", name: "hart nautical carved half-hull", year: 1895, char: "h", motif: "carved white pine & mahogany", img: "assets/hart_nautical_half_hull.jpg", palette: [135, 85, 40] },
+      { id: 3, label: "nautical gallery", name: "hart nautical gallery collection", year: 1922, char: "n", motif: "naval architectural models", img: "assets/hart_nautical_gallery.jpg", palette: [95, 75, 55] },
+      { id: 4, label: "edgerton log", name: "edgerton laboratory research log", year: 1934, char: "e", motif: "ink on archival pulp paper", img: "assets/edgerton_notebook_304.jpg", palette: [35, 45, 65] },
+      { id: 5, label: "strobe notebook", name: "strobe circuit research notebook", year: 1941, char: "l", motif: "graph paper technical schematic", img: "assets/edgerton_lab_notebook.jpg", palette: [25, 85, 155] },
+      { id: 6, label: "milk coronet", name: "edgerton high-speed strobe coronet", year: 1964, char: "a", motif: "microsecond optical flash", img: "assets/edgerton_bullet_apple.jpg", palette: [205, 35, 25] },
+      { id: 7, label: "architectural drawing", name: "mit architectural design archives", year: 1916, char: "d", motif: "graphite drafting on vellum", img: "assets/architecture_drawing_hero.jpg", palette: [115, 85, 50] },
+      { id: 8, label: "tensile structure", name: "civil engineering structural model", year: 1952, char: "s", motif: "tensile wood & structural framing", img: "assets/civil_engineering_structure.jpg", palette: [55, 65, 80] },
+      { id: 9, label: "gene cultures", name: "gene cultures living bio-art", year: 2021, char: "g", motif: "synthetic biology & agar culture", img: "assets/gene_cultures_official.jpg", palette: [15, 135, 95] },
+      { id: 10, label: "sensing oceans", name: "sensing oceans autonomous buoy", year: 2022, char: "o", motif: "oceanographic acoustic telemetry", img: "assets/sensing_oceans_official.jpg", palette: [15, 110, 175] },
+      { id: 11, label: "marine survey", name: "deep-sea marine expedition survey", year: 2023, char: "m", motif: "biological oceanography & fluid", img: "assets/oceans_hero_official.png", palette: [10, 85, 185] },
+      { id: 12, label: "avian ecology", name: "avian ecology specimen study", year: 2025, char: "b", motif: "avian feather structure & biology", img: "assets/after_dark_birds_official.jpg", palette: [165, 45, 115] },
+      { id: 13, label: "from the hip", name: "from the hip documentary photo", year: 1968, char: "p", motif: "gelatin silver film negative", img: "assets/from_the_hip_official.jpg", palette: [135, 75, 40] },
+      { id: 14, label: "event horizon", name: "event horizon black hole imaging", year: 2019, char: "z", motif: "interferometric computational radio", img: "assets/event_horizon_black_hole.png", palette: [215, 85, 10] },
+      { id: 15, label: "hologram plate", name: "optical holographic emulsion plate", year: 1974, char: "i", motif: "diffractive laser plate glass", img: "assets/optical_plate_om037.jpg", palette: [20, 115, 155] },
+      { id: 16, label: "starship enterprise", name: "starship enterprise filming model", year: 1964, char: "u", motif: "cast fiberglass & molded acrylic", img: "assets/starship_enterprise_official.jpg", palette: [50, 75, 120] },
+      { id: 17, label: "remington terminal", name: "remington calculating terminal", year: 1920, char: "r", motif: "stamped steel mechanical linkages", img: "assets/remington_calculating_machine.jpg", palette: [90, 65, 50] },
+      { id: 18, label: "crystal lattice", name: "geodetic precision instrument", year: 1888, char: "w", motif: "machined brass & quartz lattice", img: "assets/scientific_instrument_1996.jpg", palette: [175, 125, 15] },
+      { id: 19, label: "uchronia", name: "uchronia chronometric installation", year: 2022, char: "y", motif: "kinetic temporal sculpture", img: "assets/uchronia_time_installation.jpg", palette: [215, 35, 25] },
+      { id: 20, label: "materials lab", name: "materials science test specimen", year: 1965, char: "x", motif: "calibrated laboratory crystal", img: "assets/tech_collection_s4020.jpg", palette: [20, 105, 165] },
+      { id: 21, label: "computing lab", name: "computing laboratory apparatus", year: 1958, char: "k", motif: "precision electronic indicator", img: "assets/computing_instrument_014.jpg", palette: [140, 105, 35] },
+      { id: 22, label: "ai gallery", name: "mit ai gallery exhibition vitrine", year: 2021, char: "v", motif: "robotics exhibition installation", img: "assets/mit_ai_gallery_official.jpg", palette: [45, 55, 70] },
+      { id: 23, label: "design vitrine", name: "architecture & design gallery vitrine", year: 2021, char: "f", motif: "museum vitrine glass & archival mounts", img: "assets/mit_gallery_installation_095.jpg", palette: [65, 70, 75] },
+      { id: 24, label: "essential mit", name: "essential mit collection artifacts", year: 2018, char: "q", motif: "mit campus history, timber & foil", img: "assets/essential_mit_official.jpg", palette: [175, 130, 10] }
+    ];
+
+    const CELL_RES = 160;
+    const GAP_PX = 10;
+    const urlParams = new URLSearchParams(window.location.search);
+    let activeFilterMode = urlParams.get('mode') || 'dino-etch';
+    let filterIntensity = 0.90;
+    let isStreamActive = true;
+    let isDanceActive = true;
+    let lockAllDiffused = false;
+    let isLightMode = urlParams.get('theme') !== 'dark';
+    if (!isLightMode) {
+      document.body.classList.add('dark-mode');
+      const tb = document.getElementById('btn-theme-toggle');
+      if (tb) tb.innerText = 'dark';
+    }
+
+    const matrixGrid = document.getElementById('matrix-grid');
+    const footerStatus = document.getElementById('footer-status');
+    const modelStatus = document.getElementById('model-status');
+    const cellElements = [];
+    // slotToCell[slotIdx] = cellIdx currently occupying slotIdx
+    const slotToCell = Array.from({ length: 25 }, (_, i) => i);
+
+    function clamp(v, lo, hi) {
+      return v < lo ? lo : (v > hi ? hi : v);
+    }
+
+    function easeInOutCubic(x) {
+      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    // compute pixel coordinates of a slot (0..24) inside .grid-5x5
+    function getSlotRect(slotIdx) {
+      const stageW = matrixGrid.clientWidth || 720;
+      const stageH = matrixGrid.clientHeight || 720;
+      const cellW = (stageW - GAP_PX * 4) / 5;
+      const cellH = (stageH - GAP_PX * 4) / 5;
+      const row = Math.floor(slotIdx / 5);
+      const col = slotIdx % 5;
+      return {
+        x: col * (cellW + GAP_PX),
+        y: row * (cellH + GAP_PX),
+        w: cellW,
+        h: cellH
+      };
+    }
+
+    function computeSpecimenTensors(cell) {
+      const w = CELL_RES;
+      const h = CELL_RES;
+      const off = document.createElement('canvas');
+      off.width = w;
+      off.height = h;
+      const octx = off.getContext('2d', { willReadFrequently: true });
+      octx.drawImage(cell.img, 0, 0, w, h);
+
+      let imgData;
+      try {
+        imgData = octx.getImageData(0, 0, w, h).data;
+      } catch (e) {
+        return;
+      }
+
+      const n = w * h;
+      const origR = new Uint8Array(n);
+      const origG = new Uint8Array(n);
+      const origB = new Uint8Array(n);
+      const lum = new Float32Array(n);
+
+      let minL = 1.0, maxL = 0.0;
+      for (let i = 0; i < n; i++) {
+        const r = imgData[i * 4];
+        const g = imgData[i * 4 + 1];
+        const b = imgData[i * 4 + 2];
+        origR[i] = r;
+        origG[i] = g;
+        origB[i] = b;
+        const l = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+        lum[i] = l;
+        if (l < minL) minL = l;
+        if (l > maxL) maxL = l;
+      }
+
+      const span = Math.max(0.15, maxL - minL);
+      for (let i = 0; i < n; i++) {
+        lum[i] = clamp((lum[i] - minL) / span, 0, 1);
+      }
+
+      const edgeMag = new Float32Array(n);
+      const gxArr = new Float32Array(n);
+      const gyArr = new Float32Array(n);
+
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const idx = y * w + x;
+          const gx = (
+            -lum[(y - 1) * w + (x - 1)] + lum[(y - 1) * w + (x + 1)]
+            - 2 * lum[y * w + (x - 1)] + 2 * lum[y * w + (x + 1)]
+            - lum[(y + 1) * w + (x - 1)] + lum[(y + 1) * w + (x + 1)]
+          );
+          const gy = (
+            -lum[(y - 1) * w + (x - 1)] - 2 * lum[(y - 1) * w + x] - lum[(y - 1) * w + (x + 1)]
+            + lum[(y + 1) * w + (x - 1)] + 2 * lum[(y + 1) * w + x] + lum[(y + 1) * w + (x + 1)]
+          );
+          gxArr[idx] = gx;
+          gyArr[idx] = gy;
+          edgeMag[idx] = Math.min(1.0, Math.hypot(gx, gy) * 1.45);
+        }
+      }
+
+      const workL = new Float32Array(n);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = y * w + x;
+          let sum = 0, cnt = 0;
+          for (let dy = -2; dy <= 2; dy += 2) {
+            const ny = y + dy;
+            if (ny < 0 || ny >= h) continue;
+            for (let dx = -2; dx <= 2; dx += 2) {
+              const nx = x + dx;
+              if (nx < 0 || nx >= w) continue;
+              sum += lum[ny * w + nx];
+              cnt++;
+            }
+          }
+          const localMean = sum / cnt;
+          const highPass = (lum[i] - localMean) * 2.4;
+          workL[i] = clamp(0.28 + highPass + edgeMag[i] * 0.85, 0, 1);
+        }
+      }
+
+      const ditherPlate = new Uint8Array(n);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = y * w + x;
+          const v = clamp(workL[i], 0, 1);
+          const newV = v > 0.48 ? 1.0 : 0.0;
+          ditherPlate[i] = newV > 0.5 ? 255 : 0;
+          const err = (v - newV) * 0.125;
+          if (x + 1 < w) workL[i + 1] += err;
+          if (x + 2 < w) workL[i + 2] += err;
+          if (y + 1 < h) {
+            if (x > 0) workL[i + w - 1] += err;
+            workL[i + w] += err;
+            if (x + 1 < w) workL[i + w + 1] += err;
+          }
+          if (y + 2 < h) workL[i + 2 * w] += err;
+        }
+      }
+
+      const rdU = new Float32Array(n);
+      const rdV = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        rdU[i] = 1.0;
+        rdV[i] = (edgeMag[i] > 0.28 || (lum[i] < 0.35 && (i % 7 === 0))) ? 0.65 : 0.0;
+      }
+
+      cell.tensors = {
+        origR, origG, origB, lum, edgeMag, gxArr, gyArr, ditherPlate,
+        rdU, rdV, rdU2: new Float32Array(n), rdV2: new Float32Array(n)
+      };
+    }
+
+    // build 5x5 choreographed grid dom
+    SPECIMENS.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'cell-card';
+      card.dataset.index = index;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'cell-canvas-wrapper';
+
+      const img = document.createElement('img');
+      const dataUri = (window.MUSEUM_IMAGE_DATA && window.MUSEUM_IMAGE_DATA[item.img]) ? window.MUSEUM_IMAGE_DATA[item.img] : item.img;
+      img.src = dataUri;
+      img.alt = item.name;
+      wrapper.appendChild(img);
+
+      const cellCanvas = document.createElement('canvas');
+      cellCanvas.width = CELL_RES;
+      cellCanvas.height = CELL_RES;
+      cellCanvas.style.opacity = '0';
+      wrapper.appendChild(cellCanvas);
+
+      const prog = document.createElement('div');
+      prog.className = 'cell-progress';
+      wrapper.appendChild(prog);
+
+      const badge = document.createElement('div');
+      badge.className = 'cell-badge';
+      badge.innerText = item.label;
+      wrapper.appendChild(badge);
+
+      card.appendChild(wrapper);
+      matrixGrid.appendChild(card);
+
+      const ctx = cellCanvas.getContext('2d', { willReadFrequently: true });
+      const outImgData = ctx.createImageData(CELL_RES, CELL_RES);
+
+      const rect = getSlotRect(index);
+      card.style.width = `${rect.w}px`;
+      card.style.height = `${rect.h}px`;
+      card.style.transform = `translate3d(${rect.x}px, ${rect.y}px, 0)`;
+
+      const cellObj = {
+        index,
+        slotIndex: index,
+        card,
+        img,
+        canvas: cellCanvas,
+        ctx,
+        outImgData,
+        progress: prog,
+        item,
+        tensors: null,
+        // diffusion state
+        active: false,
+        phase: 0,
+        step: 0,
+        maxSteps: 28,
+        holdFrames: 0,
+        // choreography & orbital swap state
+        x: rect.x,
+        y: rect.y,
+        fromX: rect.x,
+        fromY: rect.y,
+        toX: rect.x,
+        toY: rect.y,
+        arcSign: 1,
+        swapProgress: 1.0,
+        swapSpeed: 0.022,
+        isSwapping: false
+      };
+
+      img.onload = () => {
+        computeSpecimenTensors(cellObj);
+        if (index % 2 === 0 || index < 5) {
+          setTimeout(() => igniteCellDiffusion(index), index * 80);
+        }
+      };
+
+      card.addEventListener('mouseenter', () => {
+        igniteCellDiffusion(index, true);
+        footerStatus.innerText = `${item.name}, ${item.year} — ${item.motif}`;
+      });
+
+      card.addEventListener('click', () => openWorkbench(index));
+
+      cellElements.push(cellObj);
+    });
+
+    // handle window resize cleanly
+    window.addEventListener('resize', () => {
+      cellElements.forEach(cell => {
+        const r = getSlotRect(cell.slotIndex);
+        cell.card.style.width = `${r.w}px`;
+        cell.card.style.height = `${r.h}px`;
+        cell.toX = r.x;
+        cell.toY = r.y;
+        if (!cell.isSwapping) {
+          cell.x = r.x;
+          cell.y = r.y;
+        }
+      });
+    });
+
+    // --- Choreographed Orbital Swaps & Quartet Waltzes ---
+    function startCycleSwap(slotIndices, arcScale = 1.0, speed = 0.021) {
+      const k = slotIndices.length;
+      if (k < 2) return;
+
+      // Check none of the participating cells are already mid-swap
+      const cells = slotIndices.map(s => cellElements[slotToCell[s]]);
+      if (cells.some(c => !c || c.isSwapping)) return;
+
+      const targetRects = slotIndices.map((s, idx) => {
+        const nextSlot = slotIndices[(idx + 1) % k];
+        return { nextSlot, rect: getSlotRect(nextSlot) };
+      });
+
+      cells.forEach((cell, idx) => {
+        const { nextSlot, rect } = targetRects[idx];
+        cell.fromX = cell.x;
+        cell.fromY = cell.y;
+        cell.toX = rect.x;
+        cell.toY = rect.y;
+        cell.slotIndex = nextSlot;
+        cell.swapProgress = 0.0;
+        cell.swapSpeed = speed;
+        cell.arcSign = arcScale;
+        cell.isSwapping = true;
+        cell.card.classList.add('dancing');
+        cell.card.style.zIndex = '20';
+        slotToCell[nextSlot] = cell.index;
+
+        // Ignite diffusion as they dance!
+        igniteCellDiffusion(cell.index, true);
+      });
+    }
+
+    function triggerChoreographyStep() {
+      const patternRoll = Math.random();
+
+      if (patternRoll < 0.42) {
+        // 1. Partner Orbital Waltz (2 adjacent or diagonal squares curve around each other)
+        const r1 = Math.floor(Math.random() * 5);
+        const c1 = Math.floor(Math.random() * 5);
+        const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        const [dr, dc] = dirs[Math.floor(Math.random() * dirs.length)];
+        const r2 = clamp(r1 + dr, 0, 4);
+        const c2 = clamp(c1 + dc, 0, 4);
+        if (r1 !== r2 || c1 !== c2) {
+          startCycleSwap([r1 * 5 + c1, r2 * 5 + c2], 0.42, 0.022);
+        }
+      } else if (patternRoll < 0.78) {
+        // 2. Quartet 2x2 Promenade (4 squares rotate in a pinwheel around their shared corner)
+        const r = Math.floor(Math.random() * 4);
+        const c = Math.floor(Math.random() * 4);
+        const s0 = r * 5 + c;
+        const s1 = r * 5 + (c + 1);
+        const s2 = (r + 1) * 5 + (c + 1);
+        const s3 = (r + 1) * 5 + c;
+        const clockwise = Math.random() < 0.5;
+        startCycleSwap(clockwise ? [s0, s1, s2, s3] : [s0, s3, s2, s1], 0.28, 0.020);
+      } else {
+        // 3. Triad Carousel (3 squares in a triangle trade places along curved arcs)
+        const r = Math.floor(Math.random() * 4);
+        const c = Math.floor(Math.random() * 4);
+        const s0 = r * 5 + c;
+        const s1 = r * 5 + (c + 1);
+        const s2 = (r + 1) * 5 + c;
+        startCycleSwap([s0, s1, s2], 0.34, 0.021);
+      }
+    }
+
+    function triggerGrandEnsembleDance() {
+      // Simultaneously dance four 2x2 quartets + center cross!
+      const blocks = [
+        [0, 1, 6, 5],
+        [3, 4, 9, 8],
+        [15, 16, 21, 20],
+        [18, 19, 24, 23],
+        [7, 13, 17, 11]
+      ];
+      blocks.forEach((b, idx) => {
+        setTimeout(() => startCycleSwap(b, 0.35, 0.022), idx * 60);
+      });
+    }
+
+    function igniteCellDiffusion(index, immediate = false) {
+      const cell = cellElements[index];
+      if (!cell || !cell.tensors) return;
+
+      cell.active = true;
+      cell.phase = 1;
+      cell.step = immediate ? 3 : 0;
+      cell.maxSteps = 24;
+      cell.holdFrames = lockAllDiffused ? 999999 : 190;
+      cell.card.classList.add('active-diffusing');
+      cell.canvas.style.opacity = '1';
+
+      const { edgeMag, lum, rdU, rdV } = cell.tensors;
+      for (let i = 0; i < rdU.length; i++) {
+        rdU[i] = 1.0;
+        rdV[i] = (edgeMag[i] > 0.25 || (lum[i] < 0.38 && ((i + index) % 5 === 0))) ? 0.7 : 0.0;
+      }
+    }
+
+    function renderCellDiffusionFrame(cell, globalTick) {
+      const T = cell.tensors;
+      if (!T) return;
+
+      const w = CELL_RES;
+      const h = CELL_RES;
+      const n = w * h;
+      const dst = cell.outImgData.data;
+      const [palR, palG, palB] = cell.item.palette;
+
+      const t = clamp(cell.step / cell.maxSteps, 0, 1);
+      const noiseLevel = (1 - t) * (1.2 / ((1 - t) + 0.2));
+      const mix = filterIntensity;
+      const blockSize = t < 0.25 ? 8 : (t < 0.5 ? 4 : (t < 0.75 ? 2 : 1));
+
+      // Paper / Ground color adapts to Light Mode vs Dark Mode
+      const paperR = isLightMode ? 248 : 8;
+      const paperG = isLightMode ? 246 : 9;
+      const paperB = isLightMode ? 241 : 12;
+
+      if (activeFilterMode === 'reaction') {
+        const { rdU, rdV, rdU2, rdV2, edgeMag } = T;
+        const f = 0.038, k = 0.061;
+        for (let iter = 0; iter < 2; iter++) {
+          for (let y = 1; y < h - 1; y++) {
+            const row = y * w;
+            for (let x = 1; x < w - 1; x++) {
+              const i = row + x;
+              const u = rdU[i];
+              const v = rdV[i];
+              const lapU = rdU[i - 1] + rdU[i + 1] + rdU[i - w] + rdU[i + w] - 4 * u;
+              const lapV = rdV[i - 1] + rdV[i + 1] + rdV[i - w] + rdV[i + w] - 4 * v;
+              const uvv = u * v * v;
+              const localF = f + edgeMag[i] * 0.018;
+              rdU2[i] = clamp(u + (0.18 * lapU - uvv + localF * (1 - u)), 0, 1);
+              rdV2[i] = clamp(v + (0.09 * lapV + uvv - (localF + k) * v), 0, 1);
+            }
+          }
+          rdU.set(rdU2);
+          rdV.set(rdV2);
+        }
+
+        for (let i = 0; i < n; i++) {
+          const chem = clamp((T.rdV[i] * 3.2) + T.edgeMag[i] * 0.65, 0, 1);
+          const noise = (Math.random() - 0.5) * noiseLevel * 180;
+          const rDiff = (1 - chem) * paperR + chem * palR + noise;
+          const gDiff = (1 - chem) * paperG + chem * palG + noise;
+          const bDiff = (1 - chem) * paperB + chem * palB + noise;
+
+          const p = i * 4;
+          dst[p]     = clamp(T.origR[i] * (1 - mix) + rDiff * mix, 0, 255);
+          dst[p + 1] = clamp(T.origG[i] * (1 - mix) + gDiff * mix, 0, 255);
+          dst[p + 2] = clamp(T.origB[i] * (1 - mix) + bDiff * mix, 0, 255);
+          dst[p + 3] = 255;
+        }
+      } else if (activeFilterMode === 'flow') {
+        const phaseShift = globalTick * 0.08 + cell.index;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const i = y * w + x;
+            const vx = -T.gyArr[i] * 14.0 * t + Math.cos(y * 0.09 + phaseShift) * noiseLevel * 12;
+            const vy =  T.gxArr[i] * 14.0 * t + Math.sin(x * 0.09 + phaseShift) * noiseLevel * 12;
+            const sx = clamp(Math.round(x + vx), 0, w - 1);
+            const sy = clamp(Math.round(y + vy), 0, h - 1);
+            const si = sy * w + sx;
+
+            const edgeBoost = T.edgeMag[i] * 1.4;
+            const streamWave = 0.5 + 0.5 * Math.sin((T.lum[si] * 18.0) - globalTick * 0.12);
+            const val = clamp(streamWave * 0.65 + edgeBoost * 0.75, 0, 1);
+
+            const rDiff = (1 - val) * paperR + val * palR;
+            const gDiff = (1 - val) * paperG + val * palG;
+            const bDiff = (1 - val) * paperB + val * palB;
+
+            const p = i * 4;
+            dst[p]     = clamp(T.origR[i] * (1 - mix) + rDiff * mix, 0, 255);
+            dst[p + 1] = clamp(T.origG[i] * (1 - mix) + gDiff * mix, 0, 255);
+            dst[p + 2] = clamp(T.origB[i] * (1 - mix) + bDiff * mix, 0, 255);
+            dst[p + 3] = 255;
+          }
+        }
+      } else if (activeFilterMode === 'halftone') {
+        const phase = globalTick * 0.1;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const i = y * w + x;
+            const l = T.lum[i];
+            const e = T.edgeMag[i];
+            const hatch1 = Math.sin((x + y) * 0.85 + phase) * 0.5 + 0.5;
+            const hatch2 = Math.sin((x - y) * 0.85 - phase) * 0.5 + 0.5;
+
+            let ink = 0;
+            if (e > 0.28) ink = 1.0;
+            else if (l < 0.28) ink = (hatch1 > 0.25 || hatch2 > 0.25) ? 0.95 : 0.1;
+            else if (l < 0.58) ink = (hatch1 > 0.55) ? 0.85 : 0.05;
+            else if (l < 0.78) ink = ((x + y) % 4 === 0) ? 0.55 : 0.0;
+
+            const noise = (Math.random() - 0.5) * noiseLevel * 1.4;
+            const v = clamp(ink + noise, 0, 1);
+
+            const rDiff = (1 - v) * paperR + v * (16 + e * palR * 0.75);
+            const gDiff = (1 - v) * paperG + v * (18 + e * palG * 0.75);
+            const bDiff = (1 - v) * paperB + v * (24 + e * palB * 0.75);
+
+            const p = i * 4;
+            dst[p]     = clamp(T.origR[i] * (1 - mix) + rDiff * mix, 0, 255);
+            dst[p + 1] = clamp(T.origG[i] * (1 - mix) + gDiff * mix, 0, 255);
+            dst[p + 2] = clamp(T.origB[i] * (1 - mix) + bDiff * mix, 0, 255);
+            dst[p + 3] = 255;
+          }
+        }
+      } else {
+        // DEFAULT: 'dino-etch'
+        for (let y = 0; y < h; y++) {
+          const by = blockSize > 1 ? (y - (y % blockSize)) : y;
+          for (let x = 0; x < w; x++) {
+            const bx = blockSize > 1 ? (x - (x % blockSize)) : x;
+            const bi = by * w + bx;
+            const i = y * w + x;
+
+            const latentNoise = (Math.random() - 0.5) * 255 * noiseLevel * 1.5;
+            const dither = T.ditherPlate[bi];
+            const edge = T.edgeMag[bi];
+
+            const structSignal = dither * 0.68 + edge * 255 * 0.92;
+            const normSig = clamp((structSignal + latentNoise) / 255.0, 0, 1);
+
+            let rDiff, gDiff, bDiff;
+            if (isLightMode) {
+              // Clinical Light Mode: Crisp dark botanical/technical ink & specimen pigment on warm gallery paper
+              const inkR = 16 + (1 - edge) * palR * 0.75;
+              const inkG = 18 + (1 - edge) * palG * 0.75;
+              const inkB = 24 + (1 - edge) * palB * 0.75;
+              rDiff = (1 - normSig) * paperR + normSig * inkR;
+              gDiff = (1 - normSig) * paperG + normSig * inkG;
+              bDiff = (1 - normSig) * paperB + normSig * inkB;
+            } else {
+              const hotEdge = Math.max(0, edge - 0.35) * 180 * t;
+              rDiff = 7  + normSig * palR * 0.92 + hotEdge;
+              gDiff = 8  + normSig * palG * 0.92 + hotEdge;
+              bDiff = 11 + normSig * palB * 0.92 + hotEdge;
+            }
+
+            const alpha = cell.phase === 3 ? (cell.holdFrames / 25.0) * mix : mix;
+            const p = i * 4;
+            dst[p]     = clamp(T.origR[i] * (1 - alpha) + rDiff * alpha, 0, 255);
+            dst[p + 1] = clamp(T.origG[i] * (1 - alpha) + gDiff * alpha, 0, 255);
+            dst[p + 2] = clamp(T.origB[i] * (1 - alpha) + bDiff * alpha, 0, 255);
+            dst[p + 3] = 255;
+          }
+        }
+      }
+
+      cell.ctx.putImageData(cell.outImgData, 0, 0);
+    }
+
+    // --- Master 60FPS Animation, Multi-Cell Diffusion & Choreography Loop ---
+    let globalTick = 0;
+    let streamWaveCursor = 0;
+
+    // Trigger initial partner dance shortly after startup
+    setTimeout(() => {
+      if (isDanceActive) {
+        triggerChoreographyStep();
+        setTimeout(() => triggerChoreographyStep(), 250);
+      }
+    }, 350);
+
+    function masterAnimationLoop() {
+      globalTick++;
+
+      // 1. Trigger continuous choreographed square swaps & dances
+      if (isDanceActive && !workbenchModal.classList.contains('open') && (globalTick % 48 === 0)) {
+        triggerChoreographyStep();
+      }
+
+      // 2. Trigger continuous diffusion waves
+      if (isStreamActive && !workbenchModal.classList.contains('open') && (globalTick % 22 === 0)) {
+        for (let k = 0; k < 2; k++) {
+          const idx = (streamWaveCursor * 7 + k * 3) % 25;
+          streamWaveCursor++;
+          const c = cellElements[idx];
+          if (c && (!c.active || c.phase >= 2)) {
+            igniteCellDiffusion(idx);
+          }
+        }
+      }
+
+      // 3. Advance orbital dance trajectories & ambient kinetic float for all 25 squares
+      for (let i = 0; i < cellElements.length; i++) {
+        const cell = cellElements[i];
+
+        if (cell.isSwapping) {
+          cell.swapProgress += cell.swapSpeed;
+          if (cell.swapProgress >= 1.0) {
+            cell.swapProgress = 1.0;
+            cell.isSwapping = false;
+            cell.x = cell.toX;
+            cell.y = cell.toY;
+            cell.card.classList.remove('dancing');
+            cell.card.style.zIndex = '1';
+          } else {
+            const s = easeInOutCubic(cell.swapProgress);
+            const dx = cell.toX - cell.fromX;
+            const dy = cell.toY - cell.fromY;
+            // Perpendicular normal vector for curved orbital dance around partner
+            const nx = -dy;
+            const ny = dx;
+            const arc = Math.sin(Math.PI * s) * cell.arcSign;
+
+            cell.x = cell.fromX + dx * s + nx * arc;
+            cell.y = cell.fromY + dy * s + ny * arc;
+          }
+        }
+
+        // Subtle organic harmonic sway when dance mode is active
+        const swayX = isDanceActive ? Math.sin(globalTick * 0.035 + i * 1.3) * 1.6 : 0;
+        const swayY = isDanceActive ? Math.cos(globalTick * 0.031 + i * 1.7) * 1.6 : 0;
+        const liftScale = cell.isSwapping ? (1.0 + Math.sin(Math.PI * cell.swapProgress) * 0.065) : 1.0;
+        const tiltDeg = cell.isSwapping ? (Math.sin(Math.PI * 2 * cell.swapProgress) * 2.4) : 0;
+
+        cell.card.style.transform = `translate3d(${(cell.x + swayX).toFixed(1)}px, ${(cell.y + swayY).toFixed(1)}px, 0) scale(${liftScale.toFixed(3)}) rotate(${tiltDeg.toFixed(2)}deg)`;
+
+        // 4. Advance pixel diffusion state
+        if (!cell.active) continue;
+
+        if (cell.phase === 1) {
+          cell.step += 1.25;
+          const pct = clamp(cell.step / cell.maxSteps, 0, 1);
+          cell.progress.style.width = `${pct * 100}%`;
+          renderCellDiffusionFrame(cell, globalTick);
+
+          if (cell.step >= cell.maxSteps) {
+            cell.phase = 2;
+            cell.progress.style.width = '100%';
+          }
+        } else if (cell.phase === 2) {
+          if (activeFilterMode === 'reaction' || activeFilterMode === 'flow') {
+            renderCellDiffusionFrame(cell, globalTick);
+          }
+          if (!lockAllDiffused) {
+            cell.holdFrames--;
+            if (cell.holdFrames <= 25) {
+              cell.phase = 3;
+            }
+          }
+        } else if (cell.phase === 3) {
+          cell.holdFrames--;
+          renderCellDiffusionFrame(cell, globalTick);
+          if (cell.holdFrames <= 0) {
+            cell.active = false;
+            cell.phase = 0;
+            cell.canvas.style.opacity = '0';
+            cell.progress.style.width = '0%';
+            cell.card.classList.remove('active-diffusing');
+          }
+        }
+      }
+
+      requestAnimationFrame(masterAnimationLoop);
+    }
+
+    requestAnimationFrame(masterAnimationLoop);
+
+    // --- Header Controls ---
+    document.querySelectorAll('#filter-mode-group .btn-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#filter-mode-group .btn-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilterMode = btn.dataset.mode;
+        SPECIMENS.forEach((_, idx) => {
+          if (lockAllDiffused || idx % 2 === 0) igniteCellDiffusion(idx, true);
+        });
+      });
+    });
+
+    const intensitySlider = document.getElementById('intensity-slider');
+    const intensityVal = document.getElementById('intensity-val');
+    intensitySlider.addEventListener('input', (e) => {
+      filterIntensity = parseInt(e.target.value, 10) / 100.0;
+      intensityVal.innerText = `${e.target.value}%`;
+      cellElements.forEach(c => {
+        if (c.active) renderCellDiffusionFrame(c, globalTick);
+      });
+    });
+
+    const btnToggleDance = document.getElementById('btn-toggle-dance');
+    btnToggleDance.addEventListener('click', () => {
+      isDanceActive = !isDanceActive;
+      btnToggleDance.classList.toggle('active', isDanceActive);
+      btnToggleDance.innerText = isDanceActive ? 'dance' : 'static';
+      if (isDanceActive) triggerChoreographyStep();
+    });
+
+    document.getElementById('btn-shuffle-now').addEventListener('click', () => {
+      triggerGrandEnsembleDance();
+    });
+
+    const btnToggleStream = document.getElementById('btn-toggle-stream');
+    btnToggleStream.addEventListener('click', () => {
+      isStreamActive = !isStreamActive;
+      btnToggleStream.classList.toggle('active', isStreamActive);
+      btnToggleStream.innerText = isStreamActive ? 'stream' : 'paused';
+    });
+
+    const btnLockAll = document.getElementById('btn-lock-all');
+    btnLockAll.addEventListener('click', () => {
+      lockAllDiffused = !lockAllDiffused;
+      btnLockAll.classList.toggle('active', lockAllDiffused);
+      btnLockAll.innerText = lockAllDiffused ? 'holding all' : 'hold all';
+      if (lockAllDiffused) {
+        SPECIMENS.forEach((_, idx) => igniteCellDiffusion(idx, true));
+      } else {
+        cellElements.forEach(c => { c.holdFrames = 25; c.phase = 3; });
+      }
+    });
+
+    const btnToggleTags = document.getElementById('btn-toggle-tags');
+    let showTags = true;
+    btnToggleTags.addEventListener('click', () => {
+      showTags = !showTags;
+      document.body.classList.toggle('hide-tags', !showTags);
+      btnToggleTags.classList.toggle('active', showTags);
+      btnToggleTags.innerText = showTags ? 'tags' : 'no tags';
+    });
+
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    btnThemeToggle.addEventListener('click', () => {
+      isLightMode = !isLightMode;
+      document.body.classList.toggle('dark-mode', !isLightMode);
+      btnThemeToggle.innerText = isLightMode ? 'light' : 'dark';
+      cellElements.forEach(c => {
+        if (c.active) renderCellDiffusionFrame(c, globalTick);
+      });
+    });
+
+    // dino diffusion onnx engine
+    const modelURLs = [
+      "https://golanlevin.github.io/misc/dino-diffusion/network.onnx",
+      "assets/network.onnx"
+    ];
+
+    const nSteps = 14;
+    let network = null;
+    let generator = null;
+    let patch, patchNoise, patchNoiseLevel, patchLowRes, patchCoords, patchGuidance, outputBuf;
+    let ratio = 8;
+    const taskGeometryCache = new Map();
+
+    function initializeModelVariables() {
+      const inC = 3, inW = 64, inH = 64;
+      const inNumVals = inC * inW * inH;
+      ratio = 512 / inW;
+
+      patch = new ort.Tensor("float32", new Float32Array(inNumVals), [1, inC, inH, inW]);
+      patchNoise = new ort.Tensor("float32", new Float32Array(inNumVals), [1, inC, inH, inW]);
+      patchNoiseLevel = new ort.Tensor("float32", new Float32Array(1), [1, 1, 1, 1]);
+      patchLowRes = new ort.Tensor("float32", new Float32Array(inNumVals), [1, inC, inH, inW]);
+      patchCoords = new ort.Tensor("float32", new Float32Array(inNumVals), [1, inC, inH, inW]);
+      patchGuidance = new ort.Tensor("float32", new Float32Array(inNumVals), [1, inC, inH, inW]);
+      outputBuf = new ImageData(new Uint8ClampedArray(inH * inW * 4 * ratio * ratio), inW * ratio, inH * ratio);
+      outputBuf.data.fill(255);
+    }
+
+    async function loadDinoNetwork() {
+      try {
+        initializeModelVariables();
+      } catch (e) {
+        modelStatus.innerText = "live · 60fps";
+        return;
+      }
+
+      for (const url of modelURLs) {
+        try {
+          modelStatus.innerText = "loading onnx...";
+          const response = await fetch(url);
+          if (!response.ok) continue;
+          const modelData = await response.arrayBuffer();
+          network = await ort.InferenceSession.create(modelData, {
+            executionProviders: ['webgl', 'wasm']
+          });
+          generator = makeGenerator(network, patch, patchNoise, patchNoiseLevel, patchLowRes, patchCoords, patchGuidance, outputBuf);
+          modelStatus.innerText = "onnx · 60fps";
+          return;
+        } catch (e) {
+          console.warn("onnx fallback:", url, e.message);
+        }
+      }
+      modelStatus.innerText = "live · 60fps";
+    }
+
+    function resample() {
+      if (!patchNoise) return;
+      for (let i = 0; i < patchNoise.data.length; i++) {
+        patchNoise.data[i] = Math.random();
+      }
+    }
+
+    function noiseLevelSchedule(x) {
+      const k = 0.2;
+      return x * (1 + k) / (x + k);
+    }
+
+    function getTaskGeometry(tsk, h, w, outputHeight, outputWidth) {
+      const cacheKey = [tsk.xIn, tsk.yIn, tsk.hwIn, h, w, outputHeight, outputWidth].join(",");
+      let geometry = taskGeometryCache.get(cacheKey);
+      if (geometry) return geometry;
+
+      const patchArea = h * w;
+      const nVals = patchArea * 3;
+      const coords = new Float32Array(nVals);
+      const imageIndices = new Uint32Array(nVals);
+
+      for (let c = 0; c < 3; c++) {
+        const channelOffset = c * patchArea;
+        for (let y = 0; y < h; y++) {
+          const imageY = (y + 0.5) / h * tsk.hwIn + tsk.yIn - 0.5;
+          const outY = clamp(Math.round(imageY), 0, outputHeight - 1);
+          for (let x = 0; x < w; x++) {
+            const imageX = (x + 0.5) / w * tsk.hwIn + tsk.xIn - 0.5;
+            const outX = clamp(Math.round(imageX), 0, outputWidth - 1);
+            const i = channelOffset + y * w + x;
+            coords[i] = (c == 0) ? (imageX / outputWidth) : ((c == 1) ? (imageY / outputHeight) : 1);
+            imageIndices[i] = (outY * outputWidth + outX) * 4 + c;
+          }
+        }
+      }
+
+      geometry = { coords, imageIndices };
+      taskGeometryCache.set(cacheKey, geometry);
+      return geometry;
+    }
+
+    function writePatchToImageWithFancyOverlapHandling(patchTensor, tsk, outBuf) {
+      const [h, w] = [patchTensor.dims[2], patchTensor.dims[3]];
+      const patchArea = h * w;
+      const patchData = patchTensor.data;
+      const outputData = outBuf.data;
+      const outputWidth = outBuf.width;
+      const overlap = ((tsk.hwIn - tsk.hwOut) + 1);
+
+      for (let y = tsk.yIn; y < tsk.yIn + tsk.hwIn && y < outBuf.height; y++) {
+        for (let x = tsk.xIn; x < tsk.xIn + tsk.hwIn && x < outBuf.width; x++) {
+          const py = clamp(Math.round((y - tsk.yIn + 0.5) / tsk.hwIn * h - 0.5), 0, h - 1);
+          const px = clamp(Math.round((x - tsk.xIn + 0.5) / tsk.hwIn * w - 0.5), 0, w - 1);
+          let alphaX = clamp((y - tsk.yIn) / overlap + (tsk.yIn == 0), 0, 1);
+          let alphaY = clamp((x - tsk.xIn) / overlap + (tsk.xIn == 0), 0, 1);
+          let alpha = Math.min(alphaX, alphaY);
+          const outputIndex = (y * outputWidth + x) * 4;
+          const patchIndex = py * w + px;
+          for (let c = 0; c < 3; c++) {
+            let v = 255 * patchData[c * patchArea + patchIndex];
+            v = alpha * v + (1 - alpha) * outputData[outputIndex + c];
+            outputData[outputIndex + c] = v;
+          }
+          outputData[outputIndex + 3] = 255;
+        }
+      }
+    }
+
+    function makeGenerator(network, patch, patchNoise, patchNoiseLevel, patchLowRes, patchCoords, patchGuidance, outputBuf) {
+      let guidanceIsBlankForCurrentGeneration = false;
+      let generationToken = 0;
+
+      async function generatePatch(tsk, onProgress) {
+        const [nlIn, nlOut] = [noiseLevelSchedule(1 - tsk.step / tsk.steps), noiseLevelSchedule(1 - (tsk.step + 1) / tsk.steps)];
+        const [h, w] = [patch.dims[2], patch.dims[3]];
+        const geometry = (tsk.step == 0) ? getTaskGeometry(tsk, h, w, outputBuf.height, outputBuf.width) : null;
+
+        patchNoiseLevel.data[0] = nlIn;
+        if (tsk.step == 0) {
+          patch.data.set(patchNoise.data);
+          if (tsk.stage == 0) {
+            patchLowRes.data.fill(-1);
+          } else {
+            for (let i = 0; i < patchLowRes.data.length; i++) {
+              patchLowRes.data[i] = outputBuf.data[geometry.imageIndices[i]] / 255.0;
+            }
+          }
+          patchCoords.data.set(geometry.coords);
+          if (tsk.stage > 0 && !guidanceIsBlankForCurrentGeneration) {
+            patchGuidance.data.fill(1);
+            guidanceIsBlankForCurrentGeneration = true;
+          }
+        }
+
+        const denoised = (await network.run({
+          "x": patch,
+          "noise_level": patchNoiseLevel,
+          "x_lowres": patchLowRes,
+          "x_coords": patchCoords,
+          "x_cond": patchGuidance
+        })).denoised;
+
+        const nalpha = nlOut / nlIn;
+        for (let i = 0; i < patch.data.length; i++) {
+          patch.data[i] = nalpha * patch.data[i] + (1 - nalpha) * denoised.data[i];
+        }
+
+        if (tsk.stage === 0 || tsk.step === tsk.steps - 1) {
+          writePatchToImageWithFancyOverlapHandling(tsk.stage === 0 ? patch : denoised, tsk, outputBuf);
+        }
+
+        if (onProgress) onProgress(tsk, outputBuf);
+      }
+
+      function generate(stepsPerResolution, onProgress, onDone) {
+        generationToken++;
+        const myToken = generationToken;
+        guidanceIsBlankForCurrentGeneration = false;
+        let patchTaskQueue = [];
+
+        for (let i = 0; i < stepsPerResolution.length; i++) {
+          const steps = stepsPerResolution[i];
+          const patchesPerSide = i == 0 ? 1 : ((1 << i) + 1);
+          const patchSidePx = Math.round(patch.dims[2] / patchesPerSide) * Math.round(outputBuf.width / patch.dims[2]);
+          const tasksInStage = patchesPerSide * patchesPerSide * steps;
+          for (let t = 0; t < tasksInStage; t++) {
+            const [patchY, patchX, step] = [Math.floor(t / patchesPerSide / steps), Math.floor(t / steps) % patchesPerSide, t % steps];
+            patchTaskQueue.push({
+              stage: i,
+              step: step,
+              steps: steps,
+              xIn: patchX * patchSidePx,
+              yIn: patchY * patchSidePx,
+              hwIn: Math.round(outputBuf.width / (1 << i)),
+              xOut: patchX * patchSidePx,
+              yOut: patchY * patchSidePx,
+              hwOut: patchSidePx,
+              progress: (t + 1) / tasksInStage
+            });
+          }
+        }
+
+        async function runBatch() {
+          if (myToken !== generationToken) return;
+          const batchSize = 3;
+          for (let b = 0; b < batchSize && patchTaskQueue.length > 0; b++) {
+            if (myToken !== generationToken) return;
+            const tsk = patchTaskQueue.shift();
+            await generatePatch(tsk, onProgress);
+          }
+          if (patchTaskQueue.length === 0) {
+            if (onDone && myToken === generationToken) onDone(outputBuf);
+            return;
+          }
+          requestAnimationFrame(runBatch);
+        }
+        requestAnimationFrame(runBatch);
+      }
+
+      return generate;
+    }
+
+    // interactive workbench
+    const workbenchModal = document.getElementById('workbench-modal');
+    const modalClose = document.getElementById('modal-close');
+    const modalTitle = document.getElementById('modal-title');
+    const modalAccession = document.getElementById('modal-accession');
+    const guideCharBadge = document.getElementById('guide-char-badge');
+    const diffuseStepBadge = document.getElementById('diffuse-step-badge');
+    const btnRunDiffusion = document.getElementById('btn-run-diffusion');
+    const edgeThreshSlider = document.getElementById('edge-thresh-slider');
+    const btnResetPhotoEdge = document.getElementById('btn-reset-photo-edge');
+    const btnInvertGuide = document.getElementById('btn-invert-guide');
+
+    const inputCanvas = document.getElementById('input-canvas');
+    const inputCtx = inputCanvas.getContext('2d', { willReadFrequently: true });
+    const outputCanvas = document.getElementById('output-canvas');
+    const outputCtx = outputCanvas.getContext('2d', { willReadFrequently: true });
+
+    let currentSpecimenIndex = 0;
+    let isDrawing = false;
+    let guideInverted = false;
+
+    function extract64x64EdgeGuidance(index, thresholdPct = 48, invert = false) {
+      const cell = cellElements[index];
+      if (!cell) return;
+
+      const off = document.createElement('canvas');
+      off.width = 64;
+      off.height = 64;
+      const octx = off.getContext('2d', { willReadFrequently: true });
+      octx.drawImage(cell.img, 0, 0, 64, 64);
+
+      const src = octx.getImageData(0, 0, 64, 64).data;
+      const lum = new Float32Array(64 * 64);
+      let minL = 1, maxL = 0;
+
+      for (let i = 0; i < 4096; i++) {
+        const l = (0.299 * src[i * 4] + 0.587 * src[i * 4 + 1] + 0.114 * src[i * 4 + 2]) / 255.0;
+        lum[i] = l;
+        if (l < minL) minL = l;
+        if (l > maxL) maxL = l;
+      }
+      const span = Math.max(0.15, maxL - minL);
+      for (let i = 0; i < 4096; i++) lum[i] = clamp((lum[i] - minL) / span, 0, 1);
+
+      const outImg = inputCtx.createImageData(64, 64);
+      const dst = outImg.data;
+      const thresh = (100 - thresholdPct) / 100.0;
+
+      for (let y = 0; y < 64; y++) {
+        for (let x = 0; x < 64; x++) {
+          const i = y * 64 + x;
+          let edge = 0;
+          if (x > 0 && x < 63 && y > 0 && y < 63) {
+            const gx = -lum[i - 65] + lum[i - 63] - 2 * lum[i - 1] + 2 * lum[i + 1] - lum[i + 63] + lum[i + 65];
+            const gy = -lum[i - 65] - 2 * lum[i - 64] - lum[i - 63] + lum[i + 63] + 2 * lum[i + 64] + lum[i + 65];
+            edge = Math.hypot(gx, gy);
+          }
+          const isInk = (edge > thresh * 0.65) || (lum[i] < (1.0 - thresh) * 0.55);
+          const bit = invert ? (isInk ? 255 : 0) : (isInk ? 0 : 255);
+          dst[i * 4]     = bit;
+          dst[i * 4 + 1] = bit;
+          dst[i * 4 + 2] = bit;
+          dst[i * 4 + 3] = 255;
+        }
+      }
+      inputCtx.putImageData(outImg, 0, 0);
+      guideCharBadge.innerText = `edges (${thresholdPct}%)`;
+    }
+
+    function openWorkbench(index) {
+      currentSpecimenIndex = index;
+      const sp = SPECIMENS[index];
+      modalTitle.innerText = `${sp.name} (${sp.year})`;
+      modalAccession.innerText = sp.motif;
+
+      extract64x64EdgeGuidance(index, parseInt(edgeThreshSlider.value, 10), guideInverted);
+      workbenchModal.classList.add('open');
+
+      triggerWorkbenchDiffusion();
+    }
+
+    function closeWorkbench() {
+      workbenchModal.classList.remove('open');
+    }
+
+    modalClose.addEventListener('click', closeWorkbench);
+    workbenchModal.addEventListener('click', (e) => {
+      if (e.target === workbenchModal) closeWorkbench();
+    });
+
+    edgeThreshSlider.addEventListener('input', (e) => {
+      extract64x64EdgeGuidance(currentSpecimenIndex, parseInt(e.target.value, 10), guideInverted);
+    });
+
+    btnResetPhotoEdge.addEventListener('click', () => {
+      extract64x64EdgeGuidance(currentSpecimenIndex, parseInt(edgeThreshSlider.value, 10), guideInverted);
+      triggerWorkbenchDiffusion();
+    });
+
+    btnInvertGuide.addEventListener('click', () => {
+      guideInverted = !guideInverted;
+      const imgData = inputCtx.getImageData(0, 0, 64, 64);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        d[i] = 255 - d[i];
+        d[i + 1] = 255 - d[i + 1];
+        d[i + 2] = 255 - d[i + 2];
+      }
+      inputCtx.putImageData(imgData, 0, 0);
+      triggerWorkbenchDiffusion();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeWorkbench();
+      if (workbenchModal.classList.contains('open')) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          triggerWorkbenchDiffusion();
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          inputCtx.fillStyle = '#ffffff';
+          inputCtx.fillRect(0, 0, 64, 64);
+          guideCharBadge.innerText = 'cleared';
+        } else if (e.key.length === 1 && e.key.match(/[a-zA-Z0-9]/)) {
+          drawInputGuide(e.key.toLowerCase());
+          triggerWorkbenchDiffusion();
+        }
+      }
+    });
+
+    function drawInputGuide(ch) {
+      inputCtx.fillStyle = '#ffffff';
+      inputCtx.fillRect(0, 0, 64, 64);
+      inputCtx.fillStyle = '#000000';
+      inputCtx.font = "italic bold 48px Garamond, Georgia, serif";
+      inputCtx.textAlign = "center";
+      inputCtx.textBaseline = "middle";
+      inputCtx.fillText(ch, 32, 34);
+      guideCharBadge.innerText = `glyph "${ch}"`;
+    }
+
+    function getCanvasCoords(e) {
+      const rect = inputCanvas.getBoundingClientRect();
+      const x = Math.floor(((e.clientX - rect.left) / rect.width) * 64);
+      const y = Math.floor(((e.clientY - rect.top) / rect.height) * 64);
+      return [x, y];
+    }
+
+    inputCanvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      const [x, y] = getCanvasCoords(e);
+      inputCtx.fillStyle = '#000000';
+      inputCtx.fillRect(x - 1, y - 1, 3, 3);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDrawing || !workbenchModal.classList.contains('open')) return;
+      const [x, y] = getCanvasCoords(e);
+      inputCtx.fillStyle = '#000000';
+      inputCtx.fillRect(x - 1, y - 1, 3, 3);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDrawing) {
+        isDrawing = false;
+        triggerWorkbenchDiffusion();
+      }
+    });
+
+    btnRunDiffusion.addEventListener('click', triggerWorkbenchDiffusion);
+
+    let wbAnimId = null;
+    function triggerWorkbenchDiffusion() {
+      if (wbAnimId) cancelAnimationFrame(wbAnimId);
+
+      const guideData = inputCtx.getImageData(0, 0, 64, 64).data;
+
+      if (generator) {
+        diffuseStepBadge.innerText = "diffusing...";
+        outputBuf.data.fill(255);
+
+        const nPixels = 64 * 64;
+        for (let i = 0; i < nPixels; i++) {
+          const srcVal = guideData[4 * i] / 255.0;
+          patchGuidance.data[i] = srcVal;
+          patchGuidance.data[nPixels + i] = srcVal;
+          patchGuidance.data[nPixels * 2 + i] = srcVal;
+        }
+
+        resample();
+
+        generator(
+          [nSteps, Math.max(2, Math.floor(nSteps / 5))],
+          (tsk, outBuf) => {
+            outputCtx.putImageData(outBuf, 0, 0);
+            diffuseStepBadge.innerText = `${Math.round(tsk.progress * 100)}%`;
+          },
+          (finalBuf) => {
+            outputCtx.putImageData(finalBuf, 0, 0);
+            diffuseStepBadge.innerText = "complete";
+            const cell = cellElements[currentSpecimenIndex];
+            if (cell) {
+              cell.ctx.drawImage(outputCanvas, 0, 0, CELL_RES, CELL_RES);
+              cell.canvas.style.opacity = '1';
+            }
+          }
+        );
+        return;
+      }
+
+      const outImg = outputCtx.createImageData(512, 512);
+      const dst = outImg.data;
+      const cell = cellElements[currentSpecimenIndex];
+      const [palR, palG, palB] = cell ? cell.item.palette : [40, 50, 70];
+
+      let step = 0;
+      const totalSteps = 18;
+
+      function stepWorkbench() {
+        step++;
+        const t = step / totalSteps;
+        const nl = (1 - t) * (1.2 / ((1 - t) + 0.2));
+        const block = t < 0.3 ? 8 : (t < 0.6 ? 4 : (t < 0.85 ? 2 : 1));
+        diffuseStepBadge.innerText = `${Math.round(t * 100)}%`;
+
+        for (let y = 0; y < 512; y++) {
+          const gy = Math.min(63, y >> 3);
+          const by = block > 1 ? (y - (y % block)) : y;
+          for (let x = 0; x < 512; x++) {
+            const gx = Math.min(63, x >> 3);
+            const bx = block > 1 ? (x - (x % block)) : x;
+            const gVal = guideData[(gy * 64 + gx) * 4] / 255.0;
+
+            const hatch = Math.sin((bx + by) * 0.45) * Math.cos((bx - by) * 0.45);
+            const strokeStrength = (1.0 - gVal);
+            const noise = (Math.random() - 0.5) * nl * 1.9;
+            const signal = clamp(strokeStrength * (0.75 + 0.35 * hatch) + noise, 0, 1);
+
+            const p = (y * 512 + x) * 4;
+            dst[p]     = clamp(248 * (1 - signal) + (16 + strokeStrength * palR * 0.6) * signal, 0, 255);
+            dst[p + 1] = clamp(246 * (1 - signal) + (18 + strokeStrength * palG * 0.6) * signal, 0, 255);
+            dst[p + 2] = clamp(241 * (1 - signal) + (24 + strokeStrength * palB * 0.6) * signal, 0, 255);
+            dst[p + 3] = 255;
+          }
+        }
+
+        outputCtx.putImageData(outImg, 0, 0);
+
+        if (step < totalSteps) {
+          wbAnimId = requestAnimationFrame(stepWorkbench);
+        } else {
+          diffuseStepBadge.innerText = "complete";
+          if (cell) {
+            cell.ctx.drawImage(outputCanvas, 0, 0, CELL_RES, CELL_RES);
+            cell.canvas.style.opacity = '1';
+          }
+        }
+      }
+
+      wbAnimId = requestAnimationFrame(stepWorkbench);
+    }
+
+    loadDinoNetwork();
+  </script>
+</body>
+</html>

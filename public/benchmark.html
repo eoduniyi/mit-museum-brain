@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<pre id="out">starting...</pre>
+<script>
+window.BENCH_DONE = false;
+window.BENCH_RESULT = null;
+
+async function start() {
+  try {
+    const el = document.getElementById('out');
+    el.innerText = 'loading corpus...';
+
+    // 1. Load museum_corpus_data.js dynamically
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = '/assets/museum_corpus_data.js';
+      s.onload = resolve;
+      s.onerror = (e) => reject(new Error('Failed to load /assets/museum_corpus_data.js'));
+      document.head.appendChild(s);
+    });
+
+    if (!window.MUSEUM_IMAGE_DATA) {
+      throw new Error('window.MUSEUM_IMAGE_DATA missing');
+    }
+
+    el.innerText = 'loading onnxruntime...';
+    // 2. Load onnx runtime
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js';
+      s.onload = resolve;
+      s.onerror = (e) => reject(new Error('Failed to load onnxruntime-web'));
+      document.head.appendChild(s);
+    });
+
+    const CELL_RES = 160, n = CELL_RES * CELL_RES;
+    const clamp = (v, lo, hi) => v < lo ? lo : (v > hi ? hi : v);
+    const median = a => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+    const resObj = {
+      userAgent: navigator.userAgent,
+      hardwareConcurrency: navigator.hardwareConcurrency
+    };
+
+    // 3. Load all images
+    el.innerText = 'loading images into DOM...';
+    const keys = Object.keys(window.MUSEUM_IMAGE_DATA);
+    const imgs = await Promise.all(keys.map(k => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to load img: ' + k));
+      img.src = window.MUSEUM_IMAGE_DATA[k];
+    })));
+
+    resObj.numImages = imgs.length;
+
+    // Feature tensor extractor (exact same as stream.html)
+    function computeTensors(img) {
+      const w = CELL_RES, h = CELL_RES;
+      const off = document.createElement('canvas'); off.width = w; off.height = h;
+      const octx = off.getContext('2d', { willReadFrequently: true });
+      octx.drawImage(img, 0, 0, w, h);
+      const d = octx.getImageData(0, 0, w, h).data;
+      const origR = new Uint8Array(n), origG = new Uint8Array(n), origB = new Uint8Array(n), lum = new Float32Array(n);
+      let minL = 1, maxL = 0;
+      for (let i = 0; i < n; i++) {
+        const r = d[i*4], g = d[i*4+1], b = d[i*4+2];
+        origR[i] = r; origG[i] = g; origB[i] = b;
+        const l = (0.299*r + 0.587*g + 0.114*b) / 255; lum[i] = l;
+        if (l < minL) minL = l; if (l > maxL) maxL = l;
+      }
+      const span = Math.max(0.15, maxL - minL);
+      for (let i = 0; i < n; i++) lum[i] = clamp((lum[i] - minL) / span, 0, 1);
+      const edgeMag = new Float32Array(n), gxArr = new Float32Array(n), gyArr = new Float32Array(n);
+      for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+        const idx = y*w + x;
+        const gx = -lum[(y-1)*w+x-1] + lum[(y-1)*w+x+1] - 2*lum[y*w+x-1] + 2*lum[y*w+x+1] - lum[(y+1)*w+x-1] + lum[(y+1)*w+x+1];
+        const gy = -lum[(y-1)*w+x-1] - 2*lum[(y-1)*w+x] - lum[(y-1)*w+x+1] + lum[(y+1)*w+x-1] + 2*lum[(y+1)*w+x] + lum[(y+1)*w+x+1];
+        gxArr[idx] = gx; gyArr[idx] = gy; edgeMag[idx] = Math.min(1, Math.hypot(gx, gy) * 1.45);
+      }
+      const workL = new Float32Array(n);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y*w + x; let sum = 0, cnt = 0;
+        for (let dy = -2; dy <= 2; dy += 2) { const ny = y+dy; if (ny < 0 || ny >= h) continue;
+          for (let dx = -2; dx <= 2; dx += 2) { const nx = x+dx; if (nx < 0 || nx >= w) continue; sum += lum[ny*w+nx]; cnt++; } }
+        workL[i] = clamp(0.28 + (lum[i] - sum/cnt) * 2.4 + edgeMag[i] * 0.85, 0, 1);
+      }
+      const ditherPlate = new Uint8Array(n);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y*w + x, v = clamp(workL[i], 0, 1), nv = v > 0.48 ? 1 : 0;
+        ditherPlate[i] = nv ? 255 : 0; const err = (v - nv) * 0.125;
+        if (x+1 < w) workL[i+1] += err; if (x+2 < w) workL[i+2] += err;
+        if (y+1 < h) { if (x > 0) workL[i+w-1] += err; workL[i+w] += err; if (x+1 < w) workL[i+w+1] += err; }
+        if (y+2 < h) workL[i+2*w] += err;
+      }
+      const rdU = new Float32Array(n).fill(1), rdV = new Float32Array(n);
+      for (let i = 0; i < n; i++) rdV[i] = edgeMag[i] > 0.28 ? 0.65 : 0;
+      return { origR, origG, origB, lum, edgeMag, gxArr, gyArr, ditherPlate, rdU, rdV, rdU2: new Float32Array(n), rdV2: new Float32Array(n) };
+    }
+
+    // Warmup
+    imgs.forEach(computeTensors);
+
+    el.innerText = 'measuring ingestion...';
+    const ingestTimes = [];
+    let tensors;
+    for (let r = 0; r < 25; r++) {
+      const t0 = performance.now();
+      tensors = imgs.map(computeTensors);
+      ingestTimes.push(performance.now() - t0);
+    }
+    resObj.featureIngestion25_median_ms = median(ingestTimes).toFixed(2);
+
+    // Canvas rendering benchmarks
+    const cv = document.createElement('canvas'); cv.width = cv.height = CELL_RES;
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    const dst = ctx.createImageData(CELL_RES, CELL_RES);
+
+    function etch(T) {
+      const noiseLevel = 0.42, mix = 0.9, bs = 2, pal = [200, 60, 40];
+      for (let y = 0; y < CELL_RES; y++) {
+        const by = y - (y % bs);
+        for (let x = 0; x < CELL_RES; x++) {
+          const bx = x - (x % bs), bi = by*CELL_RES + bx, i = y*CELL_RES + x;
+          const ln = (Math.random() - 0.5) * 255 * noiseLevel * 1.5, edge = T.edgeMag[bi];
+          const s = clamp((T.ditherPlate[bi]*0.68 + edge*255*0.92 + ln) / 255, 0, 1);
+          const p = i*4;
+          dst.data[p]   = T.origR[i]*(1-mix) + ((1-s)*248 + s*(16+(1-edge)*pal[0]*0.75))*mix;
+          dst.data[p+1] = T.origG[i]*(1-mix) + ((1-s)*246 + s*(18+(1-edge)*pal[1]*0.75))*mix;
+          dst.data[p+2] = T.origB[i]*(1-mix) + ((1-s)*241 + s*(24+(1-edge)*pal[2]*0.75))*mix;
+          dst.data[p+3] = 255;
+        }
+      }
+      ctx.putImageData(dst, 0, 0);
+    }
+
+    function reaction(T) {
+      const { rdU, rdV, rdU2, rdV2, edgeMag } = T, f = 0.038, k = 0.061, w = CELL_RES, mix = 0.9, pal = [200, 60, 40];
+      for (let it = 0; it < 2; it++) {
+        for (let y = 1; y < w-1; y++) for (let x = 1; x < w-1; x++) {
+          const i = y*w + x, u = rdU[i], v = rdV[i];
+          const lu = rdU[i-1] + rdU[i+1] + rdU[i-w] + rdU[i+w] - 4*u, lv = rdV[i-1] + rdV[i+1] + rdV[i-w] + rdV[i+w] - 4*v;
+          const uvv = u*v*v, lf = f + edgeMag[i]*0.018;
+          rdU2[i] = clamp(u + (0.18*lu - uvv + lf*(1-u)), 0, 1);
+          rdV2[i] = clamp(v + (0.09*lv + uvv - (lf+k)*v), 0, 1);
+        }
+        rdU.set(rdU2); rdV.set(rdV2);
+      }
+      for (let i = 0; i < n; i++) {
+        const c = clamp(rdV[i]*3.2 + edgeMag[i]*0.65, 0, 1), nz = (Math.random()-0.5)*0.42*180, p = i*4;
+        dst.data[p]   = T.origR[i]*(1-mix) + ((1-c)*248 + c*pal[0] + nz)*mix;
+        dst.data[p+1] = T.origG[i]*(1-mix) + ((1-c)*246 + c*pal[1] + nz)*mix;
+        dst.data[p+2] = T.origB[i]*(1-mix) + ((1-c)*241 + c*pal[2] + nz)*mix;
+        dst.data[p+3] = 255;
+      }
+      ctx.putImageData(dst, 0, 0);
+    }
+
+    function flow(T, tick) {
+      const w = CELL_RES, ph = tick*0.08, t = 0.5, nl = 0.42, mix = 0.9, pal = [200, 60, 40];
+      for (let y = 0; y < w; y++) for (let x = 0; x < w; x++) {
+        const i = y*w + x;
+        const vx = -T.gyArr[i]*14*t + Math.cos(y*0.09 + ph)*nl*12, vy = T.gxArr[i]*14*t + Math.sin(x*0.09 + ph)*nl*12;
+        const si = clamp(Math.round(y+vy), 0, w-1)*w + clamp(Math.round(x+vx), 0, w-1);
+        const val = clamp((0.5 + 0.5*Math.sin(T.lum[si]*18 - tick*0.12))*0.65 + T.edgeMag[i]*1.4*0.75, 0, 1), p = i*4;
+        dst.data[p]   = T.origR[i]*(1-mix) + ((1-val)*248 + val*pal[0])*mix;
+        dst.data[p+1] = T.origG[i]*(1-mix) + ((1-val)*246 + val*pal[1])*mix;
+        dst.data[p+2] = T.origB[i]*(1-mix) + ((1-val)*241 + val*pal[2])*mix;
+        dst.data[p+3] = 255;
+      }
+      ctx.putImageData(dst, 0, 0);
+    }
+
+    el.innerText = 'measuring filters...';
+    const timeKernel = (fn, N=200) => {
+      for (let i = 0; i < 15; i++) fn(i); // warmup
+      const times = [];
+      for (let i = 0; i < N; i++) {
+        const t0 = performance.now();
+        fn(i);
+        times.push(performance.now() - t0);
+      }
+      return median(times).toFixed(2);
+    };
+
+    resObj.etch_cell_ms = timeKernel(i => etch(tensors[i % tensors.length]));
+    resObj.reaction_cell_ms = timeKernel(i => reaction(tensors[i % tensors.length]));
+    resObj.flow_cell_ms = timeKernel(i => flow(tensors[i % tensors.length], i));
+
+    // DOM Kinematics test with 25 real DOM elements
+    el.innerText = 'measuring kinematics...';
+    const cards = Array.from({ length: 25 }, () => {
+      const d = document.createElement('div');
+      d.style.position = 'absolute';
+      document.body.appendChild(d);
+      return d;
+    });
+    const kinTimes = [];
+    for (let r = 0; r < 200; r++) {
+      const t0 = performance.now();
+      for (let i = 0; i < 25; i++) {
+        const p = ((r + i) % 50) / 50;
+        const s = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2;
+        const arc = Math.sin(Math.PI*s)*0.35;
+        const x = 140*s - 140*arc, y = 140*s + 140*arc;
+        const lift = 1 + 0.065*Math.sin(Math.PI*p);
+        cards[i].style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${lift.toFixed(3)})`;
+      }
+      kinTimes.push(performance.now() - t0);
+    }
+    resObj.kinematics_25_ms = median(kinTimes).toFixed(3);
+
+    // ONNX Model benchmark
+    el.innerText = 'loading onnx model...';
+    try {
+      const resp = await fetch('/assets/network.onnx');
+      const modelBuffer = await resp.arrayBuffer();
+
+      for (const ep of ['webgl', 'wasm']) {
+        try {
+          const sess = await ort.InferenceSession.create(modelBuffer, { executionProviders: [ep] });
+          const sz = 3*64*64;
+          const T = a => new ort.Tensor('float32', a, [1, 3, 64, 64]);
+          const feeds = {
+            x: T(new Float32Array(sz).map(Math.random)),
+            noise_level: new ort.Tensor('float32', new Float32Array([0.8]), [1, 1, 1, 1]),
+            x_lowres: T(new Float32Array(sz).fill(-1)),
+            x_coords: T(new Float32Array(sz).fill(0.5)),
+            x_cond: T(new Float32Array(sz).fill(1))
+          };
+
+          // warmup
+          for (let i = 0; i < 5; i++) await sess.run(feeds);
+
+          const stepTimes = [];
+          for (let i = 0; i < 30; i++) {
+            const t0 = performance.now();
+            const out = await sess.run(feeds);
+            const elapsed = performance.now() - t0;
+            stepTimes.push(elapsed);
+          }
+          resObj['onnx_step_' + ep + '_raw'] = stepTimes.slice(0, 5);
+          resObj['onnx_step_' + ep + '_ms'] = median(stepTimes).toFixed(2);
+        } catch (errEp) {
+          resObj['onnx_err_' + ep] = errEp.message;
+        }
+      }
+    } catch (modelErr) {
+      resObj.onnx_load_error = modelErr.message;
+    }
+
+    el.innerText = 'BENCH_COMPLETED\n' + JSON.stringify(resObj, null, 2);
+    window.BENCH_RESULT = resObj;
+    window.BENCH_DONE = true;
+
+    // Send result to local server
+    try {
+      await fetch('/report_bench', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resObj)
+      });
+    } catch (e) {}
+  } catch (globalErr) {
+    document.getElementById('out').innerText = 'BENCH_FAILED: ' + globalErr.message;
+    window.BENCH_DONE = true;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', start);
+</script>
+</body>
+</html>
