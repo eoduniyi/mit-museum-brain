@@ -81,7 +81,12 @@ Quantizing $H(x,y)$ at threshold $0.48$ via Atkinson error diffusion propagates 
 \end{figure}
 
 \subsection{Diffusion Workbench and Cellular Modes}
-Selecting any cell opens a glass-framed interactive workbench modal (\texttt{.workbench-card}), which runs Bohan's \emph{Dino Diffusion} U-Net~\cite{bohan2023} adapted from Levin's p5.js implementation~\cite{levin2026}. Conditioned on noisy latents $x_t$, scalar noise level $\sigma_t$, low-resolution parent pixels, normalized spatial coordinates, and a $64\times 64$ guidance map (supporting both desktop cursor and mobile touch sketching), the network predicts a denoised patch $\hat{x}_0$ following a rational schedule with shape constant $\kappa = 0.2$ over normalized step progress $u \in [0, 1]$:
+Selecting any cell opens a glass-framed interactive workbench modal (\texttt{.workbench-card}), which runs Bohan's \emph{Dino Diffusion} U-Net~\cite{bohan2023} adapted from Levin's p5.js implementation~\cite{levin2026}. At each step, the five conditioning fields---noisy patch $x_t$, bilinearly upsampled parent patch $x_{\text{low}}$, normalized coordinates $\mathbf{u} = (u,v,0.5)$, binary Sobel silhouette $E_{\text{sil}}$, and broadcast noise level $\sigma_t$---concatenate along channels ($\oplus$) into $\mathbf{z}_{\text{in}} \in \mathbb{R}^{13\times 64\times 64}$:
+\begin{align}
+\mathbf{z}_{\text{in}} &= x_t \oplus x_{\text{low}} \oplus \mathbf{u} \oplus E_{\text{sil}} \oplus \sigma_t\mathbf{1}_{64\times 64} \\
+h_\ell &= \mathcal{E}_\ell\!\left(h_{\ell-1} \downarrow_2\right), \quad \tilde{h}_{\ell-1} = \mathcal{S}_{2\times 2}\!\left(\mathcal{D}_\ell(\tilde{h}_\ell \oplus h_\ell)\right)
+\end{align}
+where $h_0 = \Phi_{\text{stem}}(\mathbf{z}_{\text{in}}) \in \mathbb{R}^{64\times 64\times 64}$, four strided encoder stages $\mathcal{E}_\ell$ ($\ell \in \{1,2,3,4\}$) contract spatial dimensions across $64^2 \to 32^2 \to 16^2 \to 8^2 \to 4^2$, $\mathcal{S}_{2\times 2} : \mathbb{R}^{256\times H\times W} \to \mathbb{R}^{64\times 2H\times 2W}$ is the $2\times 2$ depth-to-space PixelShuffle operator, and output projection $\hat{x}_0 = \Psi_{\text{out}}(\tilde{h}_0 \oplus h_0) \in \mathbb{R}^{3\times 64\times 64}$ follows a rational schedule with $\kappa = 0.2$ over step progress $u \in [0, 1]$:
 \begin{align}
 \sigma(u) &= \frac{(1 - u)(1 + \kappa)}{(1 - u) + \kappa} \\
 x_{t+1} &= \frac{\sigma_{\text{out}}}{\sigma_{\text{in}}} x_t + \left(1 - \frac{\sigma_{\text{out}}}{\sigma_{\text{in}}}\right)\hat{x}_0
