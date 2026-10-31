@@ -1,0 +1,22 @@
+{
+  "name": "mit-museum-brain",
+  "version": "1.0.0",
+  "description": "thinking cells frozen and in motion: interactive cellular morphometry and latent diffusion for the mit museum",
+  "main": "public/index.html",
+  "scripts": {
+    "start": "firebase serve --only hosting",
+    "serve": "npx serve public",
+    "deploy": "firebase deploy --only hosting"
+  },
+  "keywords": [
+    "mit-museum",
+    "cellular-automata",
+    "dino-diffusion",
+    "onnx-webgl",
+    "neuromorphic",
+    "cryo-et",
+    "firebase"
+  ],
+  "author": "Erick Oduniyi <eeoduniyi@gmail.com>",
+  "license": "MIT"
+}
