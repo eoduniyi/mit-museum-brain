@@ -82,7 +82,13 @@
       background: var(--header-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      transition: background 0.25s ease, border-color 0.25s ease;
+      transition: background 0.25s ease, border-color 0.25s ease, opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    header.idle-faded {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
     }
 
     .gallery-title {
@@ -233,6 +239,12 @@
       border-color: var(--border-focus);
     }
 
+    .cell-card.card-selected-piece {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 1px var(--border-focus), 0 4px 16px rgba(0, 0, 0, 0.09);
+      z-index: 28 !important;
+    }
+
     .cell-canvas-wrapper {
       width: 100%;
       height: 100%;
@@ -318,11 +330,95 @@
       font-size: 10px;
       color: var(--text-muted);
       letter-spacing: 0.03em;
-      transition: background 0.25s ease, border-color 0.25s ease;
+      transition: background 0.25s ease, border-color 0.25s ease, opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    #footer-status {
+    footer.idle-faded {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+    }
+
+    .footer-status-box {
+      display: flex;
+      align-items: center;
+      position: relative;
+      min-height: 20px;
+    }
+
+    .footer-hint {
+      color: var(--text-muted);
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0.65;
+      user-select: none;
+    }
+
+    .footer-hint.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .footer-piece-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(2px);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .footer-piece-badge.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .piece-name-label {
       color: var(--text);
+      font-weight: 500;
+      font-size: 10.5px;
+      letter-spacing: 0.025em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      transition: color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .piece-name-label:hover {
+      opacity: 0.85;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .piece-diffuse-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1.5px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .piece-diffuse-btn:hover {
+      border-color: var(--border-focus);
+      color: var(--text);
+      background: rgba(128, 128, 128, 0.08);
+    }
+
+    .cell-card.card-selected-piece {
+      box-shadow:
+        0 0 0 1.5px var(--border-focus),
+        0 14px 34px rgba(15, 18, 24, 0.22);
     }
 
     /* interactive dino diffusion workbench modal */
@@ -996,7 +1092,13 @@
   </main>
 
   <footer>
-    <span id="footer-status">select any object to guide diffusion</span>
+    <div id="footer-status-box" class="footer-status-box">
+      <span id="footer-hint" class="footer-hint">select any object to guide diffusion</span>
+      <div id="footer-piece-badge" class="footer-piece-badge" aria-live="polite">
+        <span id="piece-name-label" class="piece-name-label" title="click to dismiss"></span>
+        <button id="btn-piece-diffuse" class="piece-diffuse-btn" title="open in diffusion workbench">diffuse ↗</button>
+      </div>
+    </div>
     <span id="model-status">live · 60fps</span>
   </footer>
 
@@ -1062,6 +1164,23 @@
           <div class="drawer-toggle-item">
             <span class="toggle-name">specimen badges</span>
             <button id="drawer-btn-tags" class="btn-pill active">tags: on</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Ambient Idle Navbar Fade -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <span>navbar idle fade</span>
+          <span id="drawer-idle-val" class="drawer-val-readout">4s</span>
+        </div>
+        <div class="drawer-slider-row">
+          <input type="range" id="drawer-idle-slider" min="0" max="30" step="1" value="4">
+        </div>
+        <div class="drawer-toggle-row" style="margin-top: 6px;">
+          <div class="drawer-toggle-item" style="width: 100%;">
+            <span class="toggle-name">ambient auto-hide</span>
+            <button id="drawer-btn-idle" class="btn-pill active">idle fade: on (4s)</button>
           </div>
         </div>
       </div>
@@ -1190,9 +1309,14 @@
       if (tb) tb.innerText = 'dark';
     }
 
+    const appHeader = document.querySelector('header');
+    const appFooter = document.querySelector('footer');
     const matrixGrid = document.getElementById('matrix-grid');
-    const footerStatus = document.getElementById('footer-status');
     const modelStatus = document.getElementById('model-status');
+    const footerHint = document.getElementById('footer-hint');
+    const footerPieceBadge = document.getElementById('footer-piece-badge');
+    const pieceNameLabel = document.getElementById('piece-name-label');
+    const btnPieceDiffuse = document.getElementById('btn-piece-diffuse');
     const cellElements = [];
     // slotToCell[slotIdx] = cellIdx currently occupying slotIdx
     const slotToCell = Array.from({ length: 25 }, (_, i) => i);
@@ -1419,12 +1543,93 @@
 
       card.addEventListener('mouseenter', () => {
         igniteCellDiffusion(index, true);
-        footerStatus.innerText = `${item.name}, ${item.year} — ${item.motif}`;
       });
 
-      card.addEventListener('click', () => openWorkbench(index));
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        igniteCellDiffusion(index, true);
+        togglePieceName(index);
+      });
+
+      card.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        openWorkbench(index);
+      });
 
       cellElements.push(cellObj);
+    });
+
+    // --- Gentle Piece Name Presentation on Click ---
+    let selectedPieceIndex = null;
+    let pieceFadeTimer = null;
+
+    function showPieceName(index) {
+      const item = SPECIMENS[index];
+      if (!item) return;
+      selectedPieceIndex = index;
+      wakeFromIdle();
+      if (pieceFadeTimer) clearTimeout(pieceFadeTimer);
+
+      if (pieceNameLabel) {
+        pieceNameLabel.innerText = `${item.name}, ${item.year} — ${item.motif}`;
+      }
+      if (footerHint) footerHint.classList.add('hidden');
+      if (footerPieceBadge) footerPieceBadge.classList.add('visible');
+
+      cellElements.forEach((c, idx) => {
+        c.card.classList.toggle('card-selected-piece', idx === index);
+      });
+
+      // Gentle auto-fade after 7.5 seconds
+      pieceFadeTimer = setTimeout(() => {
+        hidePieceName();
+      }, 7500);
+    }
+
+    function hidePieceName() {
+      if (pieceFadeTimer) {
+        clearTimeout(pieceFadeTimer);
+        pieceFadeTimer = null;
+      }
+      selectedPieceIndex = null;
+      if (footerPieceBadge) footerPieceBadge.classList.remove('visible');
+      if (footerHint) footerHint.classList.remove('hidden');
+      cellElements.forEach(c => c.card.classList.remove('card-selected-piece'));
+      if (isAppIdle && appFooter) {
+        appFooter.classList.add('idle-faded');
+      }
+    }
+
+    function togglePieceName(index) {
+      if (selectedPieceIndex === index && footerPieceBadge && footerPieceBadge.classList.contains('visible')) {
+        hidePieceName();
+      } else {
+        showPieceName(index);
+      }
+    }
+
+    if (pieceNameLabel) {
+      pieceNameLabel.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hidePieceName();
+      });
+    }
+
+    if (btnPieceDiffuse) {
+      btnPieceDiffuse.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetIdx = (selectedPieceIndex !== null) ? selectedPieceIndex : 0;
+        openWorkbench(targetIdx);
+      });
+    }
+
+    // Dismiss piece badge if user clicks background matrix
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.cell-card') && !e.target.closest('#footer-piece-badge')) {
+        if (selectedPieceIndex !== null) {
+          hidePieceName();
+        }
+      }
     });
 
     // handle window resize & orientation change cleanly
@@ -1825,6 +2030,7 @@
     function toggleControlsDrawer(forceState) {
       const open = (typeof forceState === 'boolean') ? forceState : !document.body.classList.contains('controls-open');
       document.body.classList.toggle('controls-open', open);
+      if (typeof wakeFromIdle === 'function') wakeFromIdle();
     }
 
     if (btnOpenControls) btnOpenControls.addEventListener('click', () => toggleControlsDrawer());
@@ -1962,6 +2168,100 @@
         if (c.active) renderCellDiffusionFrame(c, globalTick);
       });
     });
+
+    // --- Ambient Idle Navbar & Footer Fade Engine ---
+    const drawerIdleSlider = document.getElementById('drawer-idle-slider');
+    const drawerIdleVal = document.getElementById('drawer-idle-val');
+    const drawerBtnIdle = document.getElementById('drawer-btn-idle');
+
+    let idleTimeoutSec = parseInt(localStorage.getItem('letters_idle_sec') || '4', 10);
+    let isAppIdle = false;
+    let idleTimer = null;
+    let isHeaderHovered = false;
+
+    function renderIdleControlUI() {
+      if (drawerIdleSlider) drawerIdleSlider.value = idleTimeoutSec;
+      if (drawerIdleVal) {
+        drawerIdleVal.innerText = idleTimeoutSec === 0 ? 'off' : `${idleTimeoutSec}s`;
+      }
+      if (drawerBtnIdle) {
+        drawerBtnIdle.classList.toggle('active', idleTimeoutSec > 0);
+        drawerBtnIdle.innerText = idleTimeoutSec > 0 ? `idle fade: on (${idleTimeoutSec}s)` : 'idle fade: off';
+      }
+    }
+
+    function setIdleTimeout(sec) {
+      idleTimeoutSec = Math.max(0, Math.min(30, parseInt(sec, 10)));
+      try {
+        localStorage.setItem('letters_idle_sec', idleTimeoutSec.toString());
+      } catch (e) {}
+      renderIdleControlUI();
+      wakeFromIdle();
+    }
+
+    if (drawerIdleSlider) {
+      drawerIdleSlider.addEventListener('input', (e) => {
+        setIdleTimeout(e.target.value);
+      });
+    }
+
+    if (drawerBtnIdle) {
+      drawerBtnIdle.addEventListener('click', () => {
+        if (idleTimeoutSec > 0) {
+          setIdleTimeout(0);
+        } else {
+          setIdleTimeout(4);
+        }
+      });
+    }
+
+    renderIdleControlUI();
+
+    function triggerIdleFade() {
+      if (idleTimeoutSec === 0) return;
+      if (document.body.classList.contains('controls-open')) return;
+      if (workbenchModal && workbenchModal.classList.contains('open')) return;
+      if (isHeaderHovered) return;
+
+      isAppIdle = true;
+      if (appHeader) appHeader.classList.add('idle-faded');
+      if (appFooter && (!footerPieceBadge || !footerPieceBadge.classList.contains('visible'))) {
+        appFooter.classList.add('idle-faded');
+      }
+    }
+
+    function wakeFromIdle() {
+      if (isAppIdle) {
+        isAppIdle = false;
+        if (appHeader) appHeader.classList.remove('idle-faded');
+        if (appFooter) appFooter.classList.remove('idle-faded');
+      }
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+        idleTimer = null;
+      }
+      if (idleTimeoutSec > 0) {
+        idleTimer = setTimeout(triggerIdleFade, idleTimeoutSec * 1000);
+      }
+    }
+
+    // Wake on user interaction
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'touchmove', 'wheel', 'scroll'].forEach(evt => {
+      window.addEventListener(evt, wakeFromIdle, { passive: true });
+    });
+
+    if (appHeader) {
+      appHeader.addEventListener('mouseenter', () => {
+        isHeaderHovered = true;
+        wakeFromIdle();
+      });
+      appHeader.addEventListener('mouseleave', () => {
+        isHeaderHovered = false;
+        wakeFromIdle();
+      });
+    }
+
+    wakeFromIdle();
 
     // dino diffusion onnx engine
     const modelURLs = [
@@ -2251,6 +2551,7 @@
     }
 
     function openWorkbench(index) {
+      if (typeof wakeFromIdle === 'function') wakeFromIdle();
       currentSpecimenIndex = index;
       const sp = SPECIMENS[index];
       modalTitle.innerText = `${sp.name} (${sp.year})`;
@@ -2264,6 +2565,7 @@
 
     function closeWorkbench() {
       workbenchModal.classList.remove('open');
+      if (typeof wakeFromIdle === 'function') wakeFromIdle();
     }
 
     modalClose.addEventListener('click', closeWorkbench);
