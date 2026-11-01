@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>mit museum / thinking cells frozen and in motion</title>
+  <title>MIT Museum / Thinking Cells Frozen and in Motion</title>
   <link rel="icon" type="image/png" href="abc-block-mm.png">
   <link rel="apple-touch-icon" href="abc-block-mm.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       /* light mode clinical gallery (default) */
@@ -24,8 +27,9 @@
       --shadow-dance: 0 16px 38px rgba(15, 18, 24, 0.22);
       --modal-backdrop: rgba(245, 244, 240, 0.94);
       --modal-card: #ffffff;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-      --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+      --font-disp: "Neue Haas Grotesk Display Pro", "Haas Grot Disp Web", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-sans: "Neue Haas Grotesk Text Pro", "Haas Grot Text Web", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
     }
 
     body.dark-mode {
@@ -52,7 +56,6 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      text-transform: lowercase;
     }
 
     body, html {
@@ -92,27 +95,36 @@
     }
 
     .gallery-title {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.05em;
+      font-family: var(--font-disp);
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
       color: var(--text);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       white-space: nowrap;
     }
 
-    .gallery-title span {
+    .gallery-title .title-sep {
+      color: var(--border-focus);
+      opacity: 0.35;
+      font-weight: 300;
+      margin: 0 1px;
+    }
+
+    .gallery-title .title-sub {
       color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: -0.01em;
     }
 
     .gallery-actions {
       display: flex;
       align-items: center;
       gap: 7px;
-      font-family: var(--font-mono);
-      font-size: 10px;
+      font-family: var(--font-sans);
+      font-size: 11px;
       color: var(--text-muted);
     }
 
@@ -130,19 +142,20 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 4px 9px;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 4px 10px;
       border-radius: 8px;
       cursor: pointer;
-      letter-spacing: 0.02em;
+      letter-spacing: -0.005em;
       transition: all 0.15s ease;
       white-space: nowrap;
     }
 
     .mode-group .btn-pill {
       border-color: transparent;
-      padding: 3px 8px;
+      padding: 3.5px 9px;
       border-radius: 7px;
     }
 
@@ -161,11 +174,16 @@
     .slider-control {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       padding: 0 5px;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .slider-control span:last-child {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--text-muted);
     }
 
     .slider-control input[type="range"] {
@@ -277,16 +295,18 @@
       position: absolute;
       bottom: 5px;
       left: 6px;
-      font-family: var(--font-mono);
-      font-size: 9px;
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 500;
       color: var(--badge-text);
       background: var(--badge-bg);
       border: 1px solid var(--border);
-      padding: 1.5px 6px;
+      padding: 2px 7px;
       border-radius: 6px;
-      letter-spacing: 0.02em;
+      letter-spacing: -0.005em;
       pointer-events: none;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -330,7 +350,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 34px;
+      height: 36px;
       padding: 0 24px;
       display: flex;
       justify-content: space-between;
@@ -338,11 +358,17 @@
       z-index: 50;
       border-top: 1px solid var(--border);
       background: var(--header-bg);
-      font-family: var(--font-mono);
-      font-size: 10px;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
       color: var(--text-muted);
-      letter-spacing: 0.03em;
+      letter-spacing: -0.005em;
       transition: background 0.25s ease, border-color 0.25s ease, opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #model-status {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.03em;
     }
 
     footer.idle-faded {
@@ -360,10 +386,11 @@
 
     .footer-hint {
       color: var(--text-muted);
-      font-size: 10px;
-      letter-spacing: 0.03em;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: -0.005em;
       transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      opacity: 0.65;
+      opacity: 0.75;
       user-select: none;
     }
 
@@ -391,8 +418,8 @@
     .piece-name-label {
       color: var(--text);
       font-weight: 500;
-      font-size: 10.5px;
-      letter-spacing: 0.025em;
+      font-size: 11.5px;
+      letter-spacing: -0.005em;
       cursor: pointer;
       display: inline-flex;
       align-items: baseline;
@@ -411,12 +438,13 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 9px;
-      padding: 1.5px 7px;
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
       border-radius: 6px;
       cursor: pointer;
-      letter-spacing: 0.02em;
+      letter-spacing: -0.005em;
       transition: all 0.15s ease;
       white-space: nowrap;
     }
@@ -1059,29 +1087,29 @@
 
   <header>
     <div class="gallery-title">
-      mit museum <span class="title-sep">/</span> <span class="title-sub">thinking cells</span>
+      MIT Museum <span class="title-sep">/</span> <span class="title-sub">Thinking Cells</span>
     </div>
     <div class="gallery-actions">
       <!-- 1. Morphometry Engine Switcher -->
       <div class="mode-group" id="filter-mode-group">
-        <button class="btn-pill active" data-mode="dino-etch">etch</button>
-        <button class="btn-pill" data-mode="reaction"><span class="mode-long">reaction</span><span class="mode-short">rxn</span></button>
-        <button class="btn-pill" data-mode="flow">flow</button>
-        <button class="btn-pill" data-mode="halftone"><span class="mode-long">halftone</span><span class="mode-short">half</span></button>
+        <button class="btn-pill active" data-mode="dino-etch">Etch</button>
+        <button class="btn-pill" data-mode="reaction"><span class="mode-long">Reaction</span><span class="mode-short">Rxn</span></button>
+        <button class="btn-pill" data-mode="flow">Flow</button>
+        <button class="btn-pill" data-mode="halftone"><span class="mode-long">Halftone</span><span class="mode-short">Half</span></button>
       </div>
 
       <!-- 2. Intensity Slider (desktop) -->
       <div class="slider-control" id="header-intensity-control">
-        <span>intensity</span>
+        <span>Intensity</span>
         <input type="range" id="intensity-slider" min="15" max="100" value="90">
         <span id="intensity-val">90%</span>
       </div>
 
       <!-- 3. Desktop Dynamics Group -->
       <div class="header-dynamics-group">
-        <button id="btn-toggle-stream" class="btn-pill active" title="toggle streaming updates">stream</button>
-        <button id="btn-toggle-dance" class="btn-pill active" title="toggle spring choreography">dance</button>
-        <button id="btn-toggle-tags" class="btn-pill active" title="toggle specimen badges">tags</button>
+        <button id="btn-toggle-stream" class="btn-pill active" title="toggle streaming updates">Stream</button>
+        <button id="btn-toggle-dance" class="btn-pill active" title="toggle spring choreography">Dance</button>
+        <button id="btn-toggle-tags" class="btn-pill active" title="toggle specimen badges">Tags</button>
       </div>
 
       <!-- 4. Unified Controls Rack / Drawer Trigger -->
@@ -1089,11 +1117,11 @@
         <svg class="ctrl-hand-icon" id="ctrl-indicator-dot" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M11.5 2a1.5 1.5 0 0 1 1.5 1.5v6a.5.5 0 0 0 1 0V4.5a1.5 1.5 0 0 1 3 0v5a.5.5 0 0 0 1 0V6.5a1.5 1.5 0 0 1 3 0V14a8 8 0 0 1-8 8h-1.5a7.5 7.5 0 0 1-5.6-2.5l-3.55-3.95a1.6 1.6 0 0 1 2.38-2.14L7 15.25V4.5a1.5 1.5 0 0 1 3 0v5a.5.5 0 0 0 1 0v-6A1.5 1.5 0 0 1 11.5 2Z"/>
         </svg>
-        <span>controls</span>
+        <span>Controls</span>
       </button>
 
       <!-- 5. Theme Toggle -->
-      <button id="btn-theme-toggle" class="btn-pill" title="switch light/dark mode">light</button>
+      <button id="btn-theme-toggle" class="btn-pill" title="switch light/dark mode">Light</button>
     </div>
   </header>
 
@@ -1105,13 +1133,13 @@
 
   <footer>
     <div id="footer-status-box" class="footer-status-box">
-      <span id="footer-hint" class="footer-hint">select any object to guide diffusion</span>
+      <span id="footer-hint" class="footer-hint">Select any object to guide diffusion</span>
       <div id="footer-piece-badge" class="footer-piece-badge" aria-live="polite">
         <span id="piece-name-label" class="piece-name-label" title="click to dismiss"></span>
-        <button id="btn-piece-diffuse" class="piece-diffuse-btn" title="open in diffusion workbench">diffuse ↗</button>
+        <button id="btn-piece-diffuse" class="piece-diffuse-btn" title="open in diffusion workbench">Diffuse ↗</button>
       </div>
     </div>
-    <span id="model-status">live · 60fps</span>
+    <span id="model-status">Live · 60fps</span>
   </footer>
 
   <!-- physical instrument parameter drawer / bottom sheet -->
@@ -1120,32 +1148,32 @@
     <div class="drawer-handle-bar"><span class="drawer-handle"></span></div>
     <div class="drawer-header">
       <div class="drawer-title-box">
-        <span class="drawer-title">instrument parameters</span>
-        <span class="drawer-sub">cellular morphometry & dynamics</span>
+        <span class="drawer-title">Instrument Parameters</span>
+        <span class="drawer-sub">Cellular morphometry & dynamics</span>
       </div>
-      <button id="btn-close-controls" class="workbench-close">close</button>
+      <button id="btn-close-controls" class="workbench-close">Close</button>
     </div>
 
     <div class="drawer-body">
       <!-- Section 1: Morphometry Engine Algorithm -->
       <div class="drawer-section">
-        <div class="drawer-section-label">morphometry algorithm</div>
+        <div class="drawer-section-label">Morphometry Algorithm</div>
         <div class="drawer-mode-grid" id="drawer-mode-grid">
           <button class="drawer-mode-tile active" data-mode="dino-etch">
-            <span class="tile-name">etch</span>
-            <span class="tile-desc">dino edge hatch</span>
+            <span class="tile-name">Etch</span>
+            <span class="tile-desc">Dino edge hatch</span>
           </button>
           <button class="drawer-mode-tile" data-mode="reaction">
-            <span class="tile-name">reaction</span>
-            <span class="tile-desc">turing morphogenesis</span>
+            <span class="tile-name">Reaction</span>
+            <span class="tile-desc">Turing morphogenesis</span>
           </button>
           <button class="drawer-mode-tile" data-mode="flow">
-            <span class="tile-name">flow</span>
-            <span class="tile-desc">vector field curl</span>
+            <span class="tile-name">Flow</span>
+            <span class="tile-desc">Vector field curl</span>
           </button>
           <button class="drawer-mode-tile" data-mode="halftone">
-            <span class="tile-name">halftone</span>
-            <span class="tile-desc">stochastic raster</span>
+            <span class="tile-name">Halftone</span>
+            <span class="tile-desc">Stochastic raster</span>
           </button>
         </div>
       </div>
@@ -1153,7 +1181,7 @@
       <!-- Section 2: Filter Intensity -->
       <div class="drawer-section">
         <div class="drawer-section-label">
-          <span>filter intensity</span>
+          <span>Filter Intensity</span>
           <span id="drawer-intensity-val" class="drawer-val-readout">90%</span>
         </div>
         <div class="drawer-slider-row">
@@ -1163,19 +1191,23 @@
 
       <!-- Section 3: Dynamics & State Toggles -->
       <div class="drawer-section">
-        <div class="drawer-section-label">temporal dynamics & display</div>
+        <div class="drawer-section-label">Temporal Dynamics & Display</div>
         <div class="drawer-toggle-row">
           <div class="drawer-toggle-item">
-            <span class="toggle-name">streaming updates</span>
-            <button id="drawer-btn-stream" class="btn-pill active">stream: on</button>
+            <span class="toggle-name">Streaming Updates</span>
+            <button id="drawer-btn-stream" class="btn-pill active">Stream: On</button>
           </div>
           <div class="drawer-toggle-item">
-            <span class="toggle-name">spring choreography</span>
-            <button id="drawer-btn-dance" class="btn-pill active">dance: on</button>
+            <span class="toggle-name">Spring Choreography</span>
+            <button id="drawer-btn-dance" class="btn-pill active">Dance: On</button>
           </div>
           <div class="drawer-toggle-item">
-            <span class="toggle-name">specimen badges</span>
-            <button id="drawer-btn-tags" class="btn-pill active">tags: on</button>
+            <span class="toggle-name">Specimen Badges</span>
+            <button id="drawer-btn-tags" class="btn-pill active">Tags: On</button>
+          </div>
+          <div class="drawer-toggle-item">
+            <span class="toggle-name">Device Performance</span>
+            <button id="drawer-btn-eco" class="btn-pill active">Eco: Low CPU</button>
           </div>
         </div>
       </div>
@@ -1183,7 +1215,7 @@
       <!-- Section 4: Ambient Idle Interface & Label Fade -->
       <div class="drawer-section">
         <div class="drawer-section-label">
-          <span>navbar & cell label idle fade</span>
+          <span>Interface & Label Idle Fade</span>
           <span id="drawer-idle-val" class="drawer-val-readout">4s</span>
         </div>
         <div class="drawer-slider-row">
@@ -1191,34 +1223,34 @@
         </div>
         <div class="drawer-toggle-row" style="margin-top: 6px;">
           <div class="drawer-toggle-item" style="width: 100%;">
-            <span class="toggle-name">auto-hide labels & navbar</span>
-            <button id="drawer-btn-idle" class="btn-pill active">idle fade: on (4s)</button>
+            <span class="toggle-name">Auto-Hide Labels & Navbar</span>
+            <button id="drawer-btn-idle" class="btn-pill active">Idle Fade: On (4s)</button>
           </div>
         </div>
       </div>
 
-      <!-- Section 4: Arrangement Operations -->
+      <!-- Section 5: Arrangement Operations -->
       <div class="drawer-section">
-        <div class="drawer-section-label">matrix operations</div>
+        <div class="drawer-section-label">Matrix Operations</div>
         <div class="drawer-actions-grid">
-          <button id="btn-shuffle-now" class="btn-pill drawer-action-btn">swap arrangement</button>
-          <button id="btn-lock-all" class="btn-pill drawer-action-btn">hold / lock all</button>
+          <button id="btn-shuffle-now" class="btn-pill drawer-action-btn">Swap Arrangement</button>
+          <button id="btn-lock-all" class="btn-pill drawer-action-btn">Hold / Lock All</button>
         </div>
       </div>
 
-      <!-- Section 5: Hardware & Diagnostics -->
+      <!-- Section 6: Hardware & Diagnostics -->
       <div class="drawer-section drawer-meta-section">
         <div class="drawer-meta-line">
-          <span>runtime</span>
-          <span class="drawer-mono" id="drawer-runtime-val">onnx webgl · ready</span>
+          <span>Runtime</span>
+          <span class="drawer-mono" id="drawer-runtime-val">ONNX WebGL · Ready</span>
         </div>
         <div class="drawer-meta-line">
-          <span>matrix stage</span>
-          <span class="drawer-mono">25 cells · spring-damper euler</span>
+          <span>Matrix Stage</span>
+          <span class="drawer-mono">25 Cells · Spring-Damper Euler</span>
         </div>
         <div class="drawer-meta-line">
-          <span>corpus</span>
-          <span class="drawer-mono">mit museum accession archive</span>
+          <span>Corpus</span>
+          <span class="drawer-mono">MIT Museum Accession Archive</span>
         </div>
       </div>
     </div>
@@ -1279,40 +1311,42 @@
      * 25 authentic mit museum collection & exhibition photographs
      */
     const SPECIMENS = [
-      { id: 0, label: "crochet coral reef", name: "crochet coral reef", year: 2023, char: "c", motif: "hyperbolic fiber textile", img: "assets/crochet_coral_reef_official.jpg", palette: [215, 55, 35] },
-      { id: 1, label: "tree core", name: "dendrochronology tree core", year: 1980, char: "t", motif: "annual growth ring timber", img: "assets/cypress_tree_core_wood.jpg", palette: [145, 95, 45] },
-      { id: 2, label: "half-hull model", name: "hart nautical carved half-hull", year: 1895, char: "h", motif: "carved white pine & mahogany", img: "assets/hart_nautical_half_hull.jpg", palette: [135, 85, 40] },
-      { id: 3, label: "nautical gallery", name: "hart nautical gallery collection", year: 1922, char: "n", motif: "naval architectural models", img: "assets/hart_nautical_gallery.jpg", palette: [95, 75, 55] },
-      { id: 4, label: "edgerton log", name: "edgerton laboratory research log", year: 1934, char: "e", motif: "ink on archival pulp paper", img: "assets/edgerton_notebook_304.jpg", palette: [35, 45, 65] },
-      { id: 5, label: "strobe notebook", name: "strobe circuit research notebook", year: 1941, char: "l", motif: "graph paper technical schematic", img: "assets/edgerton_lab_notebook.jpg", palette: [25, 85, 155] },
-      { id: 6, label: "milk coronet", name: "edgerton high-speed strobe coronet", year: 1964, char: "a", motif: "microsecond optical flash", img: "assets/edgerton_bullet_apple.jpg", palette: [205, 35, 25] },
-      { id: 7, label: "architectural drawing", name: "mit architectural design archives", year: 1916, char: "d", motif: "graphite drafting on vellum", img: "assets/architecture_drawing_hero.jpg", palette: [115, 85, 50] },
-      { id: 8, label: "tensile structure", name: "civil engineering structural model", year: 1952, char: "s", motif: "tensile wood & structural framing", img: "assets/civil_engineering_structure.jpg", palette: [55, 65, 80] },
-      { id: 9, label: "gene cultures", name: "gene cultures living bio-art", year: 2021, char: "g", motif: "synthetic biology & agar culture", img: "assets/gene_cultures_official.jpg", palette: [15, 135, 95] },
-      { id: 10, label: "sensing oceans", name: "sensing oceans autonomous buoy", year: 2022, char: "o", motif: "oceanographic acoustic telemetry", img: "assets/sensing_oceans_official.jpg", palette: [15, 110, 175] },
-      { id: 11, label: "marine survey", name: "deep-sea marine expedition survey", year: 2023, char: "m", motif: "biological oceanography & fluid", img: "assets/oceans_hero_official.png", palette: [10, 85, 185] },
-      { id: 12, label: "avian ecology", name: "avian ecology specimen study", year: 2025, char: "b", motif: "avian feather structure & biology", img: "assets/after_dark_birds_official.jpg", palette: [165, 45, 115] },
-      { id: 13, label: "from the hip", name: "from the hip documentary photo", year: 1968, char: "p", motif: "gelatin silver film negative", img: "assets/from_the_hip_official.jpg", palette: [135, 75, 40] },
-      { id: 14, label: "event horizon", name: "event horizon black hole imaging", year: 2019, char: "z", motif: "interferometric computational radio", img: "assets/event_horizon_black_hole.png", palette: [215, 85, 10] },
-      { id: 15, label: "hologram plate", name: "optical holographic emulsion plate", year: 1974, char: "i", motif: "diffractive laser plate glass", img: "assets/optical_plate_om037.jpg", palette: [20, 115, 155] },
-      { id: 16, label: "starship enterprise", name: "starship enterprise filming model", year: 1964, char: "u", motif: "cast fiberglass & molded acrylic", img: "assets/starship_enterprise_official.jpg", palette: [50, 75, 120] },
-      { id: 17, label: "remington terminal", name: "remington calculating terminal", year: 1920, char: "r", motif: "stamped steel mechanical linkages", img: "assets/remington_calculating_machine.jpg", palette: [90, 65, 50] },
-      { id: 18, label: "crystal lattice", name: "geodetic precision instrument", year: 1888, char: "w", motif: "machined brass & quartz lattice", img: "assets/scientific_instrument_1996.jpg", palette: [175, 125, 15] },
-      { id: 19, label: "uchronia", name: "uchronia chronometric installation", year: 2022, char: "y", motif: "kinetic temporal sculpture", img: "assets/uchronia_time_installation.jpg", palette: [215, 35, 25] },
-      { id: 20, label: "materials lab", name: "materials science test specimen", year: 1965, char: "x", motif: "calibrated laboratory crystal", img: "assets/tech_collection_s4020.jpg", palette: [20, 105, 165] },
-      { id: 21, label: "computing lab", name: "computing laboratory apparatus", year: 1958, char: "k", motif: "precision electronic indicator", img: "assets/computing_instrument_014.jpg", palette: [140, 105, 35] },
-      { id: 22, label: "ai gallery", name: "mit ai gallery exhibition vitrine", year: 2021, char: "v", motif: "robotics exhibition installation", img: "assets/mit_ai_gallery_official.jpg", palette: [45, 55, 70] },
-      { id: 23, label: "design vitrine", name: "architecture & design gallery vitrine", year: 2021, char: "f", motif: "museum vitrine glass & archival mounts", img: "assets/mit_gallery_installation_095.jpg", palette: [65, 70, 75] },
-      { id: 24, label: "essential mit", name: "essential mit collection artifacts", year: 2018, char: "q", motif: "mit campus history, timber & foil", img: "assets/essential_mit_official.jpg", palette: [175, 130, 10] }
+      { id: 0, label: "Crochet Coral Reef", name: "Crochet Coral Reef", year: 2023, char: "c", motif: "Hyperbolic fiber textile", img: "assets/crochet_coral_reef_official.jpg", palette: [215, 55, 35] },
+      { id: 1, label: "Tree Core", name: "Dendrochronology Tree Core", year: 1980, char: "t", motif: "Annual growth ring timber", img: "assets/cypress_tree_core_wood.jpg", palette: [145, 95, 45] },
+      { id: 2, label: "Half-Hull Model", name: "Hart Nautical Carved Half-Hull", year: 1895, char: "h", motif: "Carved white pine & mahogany", img: "assets/hart_nautical_half_hull.jpg", palette: [135, 85, 40] },
+      { id: 3, label: "Nautical Gallery", name: "Hart Nautical Gallery Collection", year: 1922, char: "n", motif: "Naval architectural models", img: "assets/hart_nautical_gallery.jpg", palette: [95, 75, 55] },
+      { id: 4, label: "Edgerton Log", name: "Edgerton Laboratory Research Log", year: 1934, char: "e", motif: "Ink on archival pulp paper", img: "assets/edgerton_notebook_304.jpg", palette: [35, 45, 65] },
+      { id: 5, label: "Strobe Notebook", name: "Strobe Circuit Research Notebook", year: 1941, char: "l", motif: "Graph paper technical schematic", img: "assets/edgerton_lab_notebook.jpg", palette: [25, 85, 155] },
+      { id: 6, label: "Milk Coronet", name: "Edgerton High-Speed Strobe Coronet", year: 1964, char: "a", motif: "Microsecond optical flash", img: "assets/edgerton_bullet_apple.jpg", palette: [205, 35, 25] },
+      { id: 7, label: "Architectural Drawing", name: "MIT Architectural Design Archives", year: 1916, char: "d", motif: "Graphite drafting on vellum", img: "assets/architecture_drawing_hero.jpg", palette: [115, 85, 50] },
+      { id: 8, label: "Tensile Structure", name: "Civil Engineering Structural Model", year: 1952, char: "s", motif: "Tensile wood & structural framing", img: "assets/civil_engineering_structure.jpg", palette: [55, 65, 80] },
+      { id: 9, label: "Gene Cultures", name: "Gene Cultures Living Bio-Art", year: 2021, char: "g", motif: "Synthetic biology & agar culture", img: "assets/gene_cultures_official.jpg", palette: [15, 135, 95] },
+      { id: 10, label: "Sensing Oceans", name: "Sensing Oceans Autonomous Buoy", year: 2022, char: "o", motif: "Oceanographic acoustic telemetry", img: "assets/sensing_oceans_official.jpg", palette: [15, 110, 175] },
+      { id: 11, label: "Marine Survey", name: "Deep-Sea Marine Expedition Survey", year: 2023, char: "m", motif: "Biological oceanography & fluid", img: "assets/oceans_hero_official.png", palette: [10, 85, 185] },
+      { id: 12, label: "Avian Ecology", name: "Avian Ecology Specimen Study", year: 2025, char: "b", motif: "Avian feather structure & biology", img: "assets/after_dark_birds_official.jpg", palette: [165, 45, 115] },
+      { id: 13, label: "From the Hip", name: "From the Hip Documentary Photo", year: 1968, char: "p", motif: "Gelatin silver film negative", img: "assets/from_the_hip_official.jpg", palette: [135, 75, 40] },
+      { id: 14, label: "Event Horizon", name: "Event Horizon Black Hole Imaging", year: 2019, char: "z", motif: "Interferometric computational radio", img: "assets/event_horizon_black_hole.png", palette: [215, 85, 10] },
+      { id: 15, label: "Hologram Plate", name: "Optical Holographic Emulsion Plate", year: 1974, char: "i", motif: "Diffractive laser plate glass", img: "assets/optical_plate_om037.jpg", palette: [20, 115, 155] },
+      { id: 16, label: "Starship Enterprise", name: "Starship Enterprise Filming Model", year: 1964, char: "u", motif: "Cast fiberglass & molded acrylic", img: "assets/starship_enterprise_official.jpg", palette: [50, 75, 120] },
+      { id: 17, label: "Remington Terminal", name: "Remington Calculating Terminal", year: 1920, char: "r", motif: "Stamped steel mechanical linkages", img: "assets/remington_calculating_machine.jpg", palette: [90, 65, 50] },
+      { id: 18, label: "Crystal Lattice", name: "Geodetic Precision Instrument", year: 1888, char: "w", motif: "Machined brass & quartz lattice", img: "assets/scientific_instrument_1996.jpg", palette: [175, 125, 15] },
+      { id: 19, label: "Uchronia", name: "Uchronia Chronometric Installation", year: 2022, char: "y", motif: "Kinetic temporal sculpture", img: "assets/uchronia_time_installation.jpg", palette: [215, 35, 25] },
+      { id: 20, label: "Materials Lab", name: "Materials Science Test Specimen", year: 1965, char: "x", motif: "Calibrated laboratory crystal", img: "assets/tech_collection_s4020.jpg", palette: [20, 105, 165] },
+      { id: 21, label: "Computing Lab", name: "Computing Laboratory Apparatus", year: 1958, char: "k", motif: "Precision electronic indicator", img: "assets/computing_instrument_014.jpg", palette: [140, 105, 35] },
+      { id: 22, label: "AI Gallery", name: "MIT AI Gallery Exhibition Vitrine", year: 2021, char: "v", motif: "Robotics exhibition installation", img: "assets/mit_ai_gallery_official.jpg", palette: [45, 55, 70] },
+      { id: 23, label: "Design Vitrine", name: "Architecture & Design Gallery Vitrine", year: 2021, char: "f", motif: "Museum vitrine glass & archival mounts", img: "assets/mit_gallery_installation_095.jpg", palette: [65, 70, 75] },
+      { id: 24, label: "Essential MIT", name: "Essential MIT Collection Artifacts", year: 2018, char: "q", motif: "MIT campus history, timber & foil", img: "assets/essential_mit_official.jpg", palette: [175, 130, 10] }
     ];
 
-    const CELL_RES = 160;
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth < 768) || (navigator.maxTouchPoints > 1);
+    const CELL_RES = (isMobileDevice || window.innerWidth < 700) ? 112 : 144;
     const GAP_PX = 10;
     const urlParams = new URLSearchParams(window.location.search);
     let activeFilterMode = urlParams.get('mode') || 'dino-etch';
     let filterIntensity = 0.90;
     let isStreamActive = true;
     let isDanceActive = true;
+    let isEcoMode = urlParams.get('eco') === '0' ? false : (urlParams.get('eco') === '1' || isMobileDevice);
     let lockAllDiffused = false;
     let isLightMode = urlParams.get('theme') !== 'dark';
     if (!isLightMode) {
@@ -1941,24 +1975,24 @@
     function masterAnimationLoop() {
       globalTick++;
 
-      // 1. Trigger continuous choreographed square swaps & dances
-      if (isDanceActive && !workbenchModal.classList.contains('open') && (globalTick % 48 === 0)) {
+      // 1. Choreographed square swaps & dances (load-adaptive interval)
+      const danceInterval = isEcoMode ? (isAppIdle ? 120 : 84) : (isAppIdle ? 80 : 48);
+      if (isDanceActive && !workbenchModal.classList.contains('open') && (globalTick % danceInterval === 0)) {
         triggerChoreographyStep();
       }
 
-      // 2. Trigger continuous diffusion waves
-      if (isStreamActive && !workbenchModal.classList.contains('open') && (globalTick % 22 === 0)) {
-        for (let k = 0; k < 2; k++) {
-          const idx = (streamWaveCursor * 7 + k * 3) % 25;
-          streamWaveCursor++;
-          const c = cellElements[idx];
-          if (c && (!c.active || c.phase >= 2)) {
-            igniteCellDiffusion(idx);
-          }
+      // 2. Continuous diffusion waves (load-adaptive serene cadence)
+      const streamInterval = isEcoMode ? (isAppIdle ? 110 : 56) : (isAppIdle ? 72 : 36);
+      if (isStreamActive && !workbenchModal.classList.contains('open') && (globalTick % streamInterval === 0)) {
+        const idx = (streamWaveCursor * 7) % 25;
+        streamWaveCursor++;
+        const c = cellElements[idx];
+        if (c && (!c.active || c.phase >= 2)) {
+          igniteCellDiffusion(idx);
         }
       }
 
-      // 3. Advance orbital dance trajectories & ambient kinetic float for all 25 squares
+      // 3. Advance orbital dance trajectories & kinetic transforms
       for (let i = 0; i < cellElements.length; i++) {
         const cell = cellElements[i];
 
@@ -1971,43 +2005,46 @@
             cell.y = cell.toY;
             cell.card.classList.remove('dancing');
             cell.card.style.zIndex = '1';
+            cell.card.style.transform = `translate3d(${cell.x.toFixed(1)}px, ${cell.y.toFixed(1)}px, 0)`;
           } else {
             const s = easeInOutCubic(cell.swapProgress);
             const dx = cell.toX - cell.fromX;
             const dy = cell.toY - cell.fromY;
-            // Perpendicular normal vector for curved orbital dance around partner
             const nx = -dy;
             const ny = dx;
             const arc = Math.sin(Math.PI * s) * cell.arcSign;
 
             cell.x = cell.fromX + dx * s + nx * arc;
             cell.y = cell.fromY + dy * s + ny * arc;
+
+            const liftScale = 1.0 + Math.sin(Math.PI * cell.swapProgress) * 0.065;
+            const tiltDeg = Math.sin(Math.PI * 2 * cell.swapProgress) * 2.4;
+            cell.card.style.transform = `translate3d(${cell.x.toFixed(1)}px, ${cell.y.toFixed(1)}px, 0) scale(${liftScale.toFixed(3)}) rotate(${tiltDeg.toFixed(2)}deg)`;
           }
+        } else if (isDanceActive && !isEcoMode && !isAppIdle && (globalTick % 2 === 0)) {
+          // Subtle organic harmonic sway only when actively dancing on desktop standard mode
+          const swayX = Math.sin(globalTick * 0.035 + i * 1.3) * 1.5;
+          const swayY = Math.cos(globalTick * 0.031 + i * 1.7) * 1.5;
+          cell.card.style.transform = `translate3d(${(cell.x + swayX).toFixed(1)}px, ${(cell.y + swayY).toFixed(1)}px, 0)`;
         }
 
-        // Subtle organic harmonic sway when dance mode is active
-        const swayX = isDanceActive ? Math.sin(globalTick * 0.035 + i * 1.3) * 1.6 : 0;
-        const swayY = isDanceActive ? Math.cos(globalTick * 0.031 + i * 1.7) * 1.6 : 0;
-        const liftScale = cell.isSwapping ? (1.0 + Math.sin(Math.PI * cell.swapProgress) * 0.065) : 1.0;
-        const tiltDeg = cell.isSwapping ? (Math.sin(Math.PI * 2 * cell.swapProgress) * 2.4) : 0;
-
-        cell.card.style.transform = `translate3d(${(cell.x + swayX).toFixed(1)}px, ${(cell.y + swayY).toFixed(1)}px, 0) scale(${liftScale.toFixed(3)}) rotate(${tiltDeg.toFixed(2)}deg)`;
-
-        // 4. Advance pixel diffusion state
+        // 4. Advance pixel diffusion state with eco-aware throttling
         if (!cell.active) continue;
 
+        const shouldRenderPixels = !isEcoMode || (globalTick % 2 === 0);
+
         if (cell.phase === 1) {
-          cell.step += 1.25;
+          cell.step += isEcoMode ? 1.5 : 1.25;
           const pct = clamp(cell.step / cell.maxSteps, 0, 1);
           cell.progress.style.width = `${pct * 100}%`;
-          renderCellDiffusionFrame(cell, globalTick);
+          if (shouldRenderPixels) renderCellDiffusionFrame(cell, globalTick);
 
           if (cell.step >= cell.maxSteps) {
             cell.phase = 2;
             cell.progress.style.width = '100%';
           }
         } else if (cell.phase === 2) {
-          if (activeFilterMode === 'reaction' || activeFilterMode === 'flow') {
+          if ((activeFilterMode === 'reaction' || activeFilterMode === 'flow') && (globalTick % (isEcoMode ? 4 : 2) === 0)) {
             renderCellDiffusionFrame(cell, globalTick);
           }
           if (!lockAllDiffused) {
@@ -2018,7 +2055,7 @@
           }
         } else if (cell.phase === 3) {
           cell.holdFrames--;
-          renderCellDiffusionFrame(cell, globalTick);
+          if (shouldRenderPixels) renderCellDiffusionFrame(cell, globalTick);
           if (cell.holdFrames <= 0) {
             cell.active = false;
             cell.phase = 0;
@@ -2108,11 +2145,11 @@
       isStreamActive = state;
       if (btnToggleStream) {
         btnToggleStream.classList.toggle('active', isStreamActive);
-        btnToggleStream.innerText = isStreamActive ? 'stream' : 'paused';
+        btnToggleStream.innerText = isStreamActive ? 'Stream' : 'Paused';
       }
       if (drawerBtnStream) {
         drawerBtnStream.classList.toggle('active', isStreamActive);
-        drawerBtnStream.innerText = isStreamActive ? 'stream: on' : 'stream: off';
+        drawerBtnStream.innerText = isStreamActive ? 'Stream: On' : 'Stream: Off';
       }
       updateCtrlIndicator();
     }
@@ -2125,11 +2162,11 @@
       isDanceActive = state;
       if (btnToggleDance) {
         btnToggleDance.classList.toggle('active', isDanceActive);
-        btnToggleDance.innerText = isDanceActive ? 'dance' : 'static';
+        btnToggleDance.innerText = isDanceActive ? 'Dance' : 'Static';
       }
       if (drawerBtnDance) {
         drawerBtnDance.classList.toggle('active', isDanceActive);
-        drawerBtnDance.innerText = isDanceActive ? 'dance: on' : 'dance: off';
+        drawerBtnDance.innerText = isDanceActive ? 'Dance: On' : 'Dance: Off';
       }
       updateCtrlIndicator();
       if (isDanceActive) triggerChoreographyStep();
@@ -2145,7 +2182,7 @@
     btnLockAll.addEventListener('click', () => {
       lockAllDiffused = !lockAllDiffused;
       btnLockAll.classList.toggle('active', lockAllDiffused);
-      btnLockAll.innerText = lockAllDiffused ? 'holding all' : 'hold all';
+      btnLockAll.innerText = lockAllDiffused ? 'Holding All' : 'Hold All';
       if (lockAllDiffused) {
         SPECIMENS.forEach((_, idx) => igniteCellDiffusion(idx, true));
       } else {
@@ -2161,21 +2198,36 @@
       document.body.classList.toggle('hide-tags', !showTags);
       if (btnToggleTags) {
         btnToggleTags.classList.toggle('active', showTags);
-        btnToggleTags.innerText = showTags ? 'tags' : 'no tags';
+        btnToggleTags.innerText = showTags ? 'Tags' : 'No Tags';
       }
       if (drawerBtnTags) {
         drawerBtnTags.classList.toggle('active', showTags);
-        drawerBtnTags.innerText = showTags ? 'tags: on' : 'tags: off';
+        drawerBtnTags.innerText = showTags ? 'Tags: On' : 'Tags: Off';
       }
     }
     if (btnToggleTags) btnToggleTags.addEventListener('click', () => setTagsState(!showTags));
     if (drawerBtnTags) drawerBtnTags.addEventListener('click', () => setTagsState(!showTags));
 
+    // Performance & Device Eco Mode
+    const drawerBtnEco = document.getElementById('drawer-btn-eco');
+    function setEcoMode(state) {
+      isEcoMode = state;
+      if (drawerBtnEco) {
+        drawerBtnEco.classList.toggle('active', isEcoMode);
+        drawerBtnEco.innerText = isEcoMode ? 'Eco: Low CPU' : 'Eco: Off (Full)';
+      }
+      if (modelStatus) {
+        modelStatus.innerText = isEcoMode ? 'Live · Eco 30fps' : 'Live · 60fps';
+      }
+    }
+    if (drawerBtnEco) drawerBtnEco.addEventListener('click', () => setEcoMode(!isEcoMode));
+    setEcoMode(isEcoMode);
+
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
     btnThemeToggle.addEventListener('click', () => {
       isLightMode = !isLightMode;
       document.body.classList.toggle('dark-mode', !isLightMode);
-      btnThemeToggle.innerText = isLightMode ? 'light' : 'dark';
+      btnThemeToggle.innerText = isLightMode ? 'Light' : 'Dark';
       cellElements.forEach(c => {
         if (c.active) renderCellDiffusionFrame(c, globalTick);
       });
