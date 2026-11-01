@@ -291,13 +291,25 @@
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: calc(100% - 12px);
-      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.app-idle .cell-badge {
+      opacity: 0;
+      transform: translateY(3px);
+      pointer-events: none;
+    }
+
+    body.app-idle .cell-card:hover .cell-badge,
+    body.app-idle .cell-card.card-selected-piece .cell-badge {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     body.hide-tags .cell-badge {
-      opacity: 0;
-      transform: translateY(4px);
-      pointer-events: none;
+      opacity: 0 !important;
+      transform: translateY(4px) !important;
+      pointer-events: none !important;
     }
 
     .cell-progress {
@@ -1168,10 +1180,10 @@
         </div>
       </div>
 
-      <!-- Section 4: Ambient Idle Navbar Fade -->
+      <!-- Section 4: Ambient Idle Interface & Label Fade -->
       <div class="drawer-section">
         <div class="drawer-section-label">
-          <span>navbar idle fade</span>
+          <span>navbar & cell label idle fade</span>
           <span id="drawer-idle-val" class="drawer-val-readout">4s</span>
         </div>
         <div class="drawer-slider-row">
@@ -1179,7 +1191,7 @@
         </div>
         <div class="drawer-toggle-row" style="margin-top: 6px;">
           <div class="drawer-toggle-item" style="width: 100%;">
-            <span class="toggle-name">ambient auto-hide</span>
+            <span class="toggle-name">auto-hide labels & navbar</span>
             <button id="drawer-btn-idle" class="btn-pill active">idle fade: on (4s)</button>
           </div>
         </div>
@@ -2224,6 +2236,7 @@
       if (isHeaderHovered) return;
 
       isAppIdle = true;
+      document.body.classList.add('app-idle');
       if (appHeader) appHeader.classList.add('idle-faded');
       if (appFooter && (!footerPieceBadge || !footerPieceBadge.classList.contains('visible'))) {
         appFooter.classList.add('idle-faded');
@@ -2233,6 +2246,7 @@
     function wakeFromIdle() {
       if (isAppIdle) {
         isAppIdle = false;
+        document.body.classList.remove('app-idle');
         if (appHeader) appHeader.classList.remove('idle-faded');
         if (appFooter) appFooter.classList.remove('idle-faded');
       }
