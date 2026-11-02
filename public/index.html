@@ -380,41 +380,56 @@
     }
 
     .footer-status-box {
+      position: relative;
       display: flex;
       align-items: center;
-      position: relative;
-      min-height: 20px;
+      min-height: 22px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .footer-hint {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
       color: var(--text-muted);
       font-size: 11px;
       font-weight: 400;
       letter-spacing: -0.005em;
-      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       opacity: 0.75;
       user-select: none;
+      white-space: nowrap;
+      pointer-events: auto;
     }
 
     .footer-hint.hidden {
       opacity: 0;
       pointer-events: none;
+      transform: translateY(calc(-50% - 2px));
     }
 
     .footer-piece-badge {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
       display: inline-flex;
       align-items: center;
       gap: 9px;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(2px);
-      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      max-width: calc(100% - 10px);
     }
 
     .footer-piece-badge.visible {
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(0);
+      transform: translateY(-50%);
     }
 
     .piece-name-label {
@@ -426,6 +441,9 @@
       display: inline-flex;
       align-items: baseline;
       gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       transition: color 0.2s ease, opacity 0.2s ease;
     }
 
@@ -1155,7 +1173,7 @@
 
   <footer>
     <div id="footer-status-box" class="footer-status-box">
-      <span id="footer-hint" class="footer-hint">Select any object to guide diffusion</span>
+      <span id="footer-hint" class="footer-hint">select any object to guide diffusion</span>
       <div id="footer-piece-badge" class="footer-piece-badge" aria-live="polite">
         <span id="piece-name-label" class="piece-name-label" title="click to dismiss"></span>
         <button id="btn-piece-diffuse" class="piece-diffuse-btn" title="open in diffusion workbench">diffuse ↗</button>
@@ -1635,6 +1653,7 @@
       const item = SPECIMENS[index];
       if (!item) return;
       selectedPieceIndex = index;
+      currentSpecimenIndex = index;
       wakeFromIdle();
       if (pieceFadeTimer) clearTimeout(pieceFadeTimer);
 
@@ -1648,10 +1667,25 @@
         c.card.classList.toggle('card-selected-piece', idx === index);
       });
 
-      // Gentle auto-fade after 7.5 seconds
+      // Continuous lateral neural propagation (guiding surrounding cells)
+      const row = Math.floor(index / 5);
+      const col = index % 5;
+      const neighbors = [];
+      if (row > 0) neighbors.push((row - 1) * 5 + col);
+      if (row < 4) neighbors.push((row + 1) * 5 + col);
+      if (col > 0) neighbors.push(row * 5 + (col - 1));
+      if (col < 4) neighbors.push(row * 5 + (col + 1));
+      neighbors.forEach((nIdx, i) => {
+        setTimeout(() => {
+          const nc = cellElements[nIdx];
+          if (nc && (!nc.active || nc.phase >= 2)) igniteCellDiffusion(nIdx);
+        }, 110 * (i + 1));
+      });
+
+      // Gentle auto-fade after 8 seconds
       pieceFadeTimer = setTimeout(() => {
         hidePieceName();
-      }, 7500);
+      }, 8000);
     }
 
     function hidePieceName() {
@@ -2353,7 +2387,6 @@
 
     // dino diffusion onnx engine
     const modelURLs = [
-      "https://golanlevin.github.io/misc/dino-diffusion/network.onnx",
       "assets/network.onnx"
     ];
 
@@ -2365,6 +2398,7 @@
     const taskGeometryCache = new Map();
 
     function initializeModelVariables() {
+      if (typeof ort === 'undefined') return;
       const inC = 3, inW = 64, inH = 64;
       const inNumVals = inC * inW * inH;
       ratio = 512 / inW;
@@ -2380,30 +2414,63 @@
     }
 
     async function loadDinoNetwork() {
+      if (typeof ort === 'undefined') {
+        console.info("ort runtime not loaded, continuous neural synthesis active");
+        if (modelStatus) modelStatus.innerText = isEcoMode ? "live · eco 30fps" : "live · 60fps";
+        return;
+      }
+
+      try {
+        if (ort.env && ort.env.wasm) {
+          ort.env.wasm.numThreads = 1;
+          ort.env.wasm.proxy = false;
+          ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+        }
+      } catch (e) {
+        console.warn("ort wasm environment config:", e);
+      }
+
       try {
         initializeModelVariables();
       } catch (e) {
-        modelStatus.innerText = "live · 60fps";
+        console.warn("model variable initialization failed:", e);
+        if (modelStatus) modelStatus.innerText = isEcoMode ? "live · eco 30fps" : "live · 60fps";
         return;
       }
 
       for (const url of modelURLs) {
         try {
-          modelStatus.innerText = "loading onnx...";
+          if (modelStatus) modelStatus.innerText = "loading onnx...";
           const response = await fetch(url);
           if (!response.ok) continue;
           const modelData = await response.arrayBuffer();
-          network = await ort.InferenceSession.create(modelData, {
-            executionProviders: ['webgl', 'wasm']
-          });
-          generator = makeGenerator(network, patch, patchNoise, patchNoiseLevel, patchLowRes, patchCoords, patchGuidance, outputBuf);
-          modelStatus.innerText = "onnx · 60fps";
-          return;
+
+          // Try WebGL first, then fallback to WASM
+          try {
+            network = await ort.InferenceSession.create(modelData, {
+              executionProviders: ['webgl']
+            });
+            generator = makeGenerator(network, patch, patchNoise, patchNoiseLevel, patchLowRes, patchCoords, patchGuidance, outputBuf);
+            if (modelStatus) modelStatus.innerText = "onnx webgl · 60fps";
+            const drawerRt = document.getElementById("drawer-runtime-val");
+            if (drawerRt) drawerRt.innerText = "ONNX WebGL · Ready";
+            return;
+          } catch (glErr) {
+            console.info("webgl backend unavailable, falling back to wasm:", glErr.message);
+            network = await ort.InferenceSession.create(modelData, {
+              executionProviders: ['wasm']
+            });
+            generator = makeGenerator(network, patch, patchNoise, patchNoiseLevel, patchLowRes, patchCoords, patchGuidance, outputBuf);
+            if (modelStatus) modelStatus.innerText = "onnx wasm · 60fps";
+            const drawerRt = document.getElementById("drawer-runtime-val");
+            if (drawerRt) drawerRt.innerText = "ONNX WASM · Ready";
+            return;
+          }
         } catch (e) {
-          console.warn("onnx fallback:", url, e.message);
+          console.warn("onnx session setup fallback:", url, e.message);
         }
       }
-      modelStatus.innerText = "live · 60fps";
+      if (modelStatus) modelStatus.innerText = isEcoMode ? "live · eco 30fps" : "live · 60fps";
     }
 
     function resample() {
@@ -2551,11 +2618,16 @@
 
         async function runBatch() {
           if (myToken !== generationToken) return;
-          const batchSize = 3;
-          for (let b = 0; b < batchSize && patchTaskQueue.length > 0; b++) {
-            if (myToken !== generationToken) return;
-            const tsk = patchTaskQueue.shift();
-            await generatePatch(tsk, onProgress);
+          try {
+            if (patchTaskQueue.length > 0) {
+              const tsk = patchTaskQueue.shift();
+              await generatePatch(tsk, onProgress);
+            }
+          } catch (err) {
+            console.warn("diffusion patch generation caught:", err);
+            patchTaskQueue = [];
+            if (onDone && myToken === generationToken) onDone(outputBuf);
+            return;
           }
           if (patchTaskQueue.length === 0) {
             if (onDone && myToken === generationToken) onDone(outputBuf);
@@ -2782,6 +2854,7 @@
     btnRunDiffusion.addEventListener('click', triggerWorkbenchDiffusion);
 
     let wbAnimId = null;
+    let wbOutImg = null;
     function triggerWorkbenchDiffusion() {
       if (wbAnimId) cancelAnimationFrame(wbAnimId);
 
@@ -2820,13 +2893,15 @@
         return;
       }
 
-      const outImg = outputCtx.createImageData(512, 512);
-      const dst = outImg.data;
+      if (!wbOutImg) {
+        wbOutImg = outputCtx.createImageData(512, 512);
+      }
+      const dst = wbOutImg.data;
       const cell = cellElements[currentSpecimenIndex];
       const [palR, palG, palB] = cell ? cell.item.palette : [40, 50, 70];
 
       let step = 0;
-      const totalSteps = 18;
+      const totalSteps = 16;
 
       function stepWorkbench() {
         step++;
@@ -2856,7 +2931,7 @@
           }
         }
 
-        outputCtx.putImageData(outImg, 0, 0);
+        outputCtx.putImageData(wbOutImg, 0, 0);
 
         if (step < totalSteps) {
           wbAnimId = requestAnimationFrame(stepWorkbench);
